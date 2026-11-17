@@ -663,39 +663,39 @@ var DESTS = [
     el: { p: 3, t: 2, e: 1 }, cat: { flo: 3, min: 2, bst: 1, rel: 1, con: 0.5 },
     desc: { zh: '离天穹最近的岚砂协。夜里的百合会朝着月亮开。', en: 'The Lansha district closest to Aethorf. Its lilies open toward the moon at night.' } },
   { id: 'noctflame', zh: '燃夜', en: 'Noctflame', area: { zh: '中部烬痕4协', en: 'Central Jinhen, District 4' },
-    tier: 1, rec: 8, days: 5, intel: 8, lv: 3, clan: 'ember',
+    tier: 1, rec: 13, days: 5, intel: 8, lv: 3, clan: 'ember',
     el: { s: 4, t: 2 }, cat: { min: 3, rel: 2, bst: 1, flo: 1 },
     desc: { zh: '地热让这里的夜晚也是暖的。', en: 'Geothermal heat keeps the nights warm here.' } },
   { id: 'abysweald', zh: '沧麓', en: 'Abysweald', area: { zh: '中部苍阙6协', en: 'Central Cangque, District 6' },
-    tier: 1, rec: 10, days: 5, intel: 10, lv: 4, clan: 'frost',
+    tier: 1, rec: 22, days: 5, intel: 10, lv: 4, clan: 'frost',
     el: { d: 4, f: 2 }, cat: { flo: 2, bst: 2, min: 1, rel: 1 },
     desc: { zh: '山脚下的湖泊群，雾气终年不散。', en: 'Lakes at the foot of the mountains, wrapped in mist all year.' } },
   { id: 'vacuumyth', zh: '虚传', en: 'Vacuumyth', area: { zh: '中部嶂渊5协', en: 'Central Zhangyuan, District 5' },
-    tier: 2, rec: 16, days: 7, intel: 20, lv: 6, clan: 'necro',
+    tier: 2, rec: 36, days: 7, intel: 20, lv: 6, clan: 'necro',
     el: { c: 3, e: 3 }, cat: { rel: 3, min: 2, flo: 1, bst: 1 },
     desc: { zh: '据说这里的一切都只存在于传闻中。小龙们回来时总说不清自己去过哪里。', en: 'They say everything here exists only in rumor. Dragonlings never quite remember where they went.' } },
   { id: 'monifern', zh: '山薇', en: 'Monifern', area: { zh: '东部岚砂2协', en: 'Eastern Lansha, District 2' },
-    tier: 2, rec: 22, days: 8, intel: 30, lv: 8, clan: 'thorn',
+    tier: 2, rec: 46, days: 8, intel: 30, lv: 8, clan: 'thorn',
     el: { p: 3, t: 3, e: 1 }, cat: { flo: 4, bst: 2, min: 1, con: 0.5 },
     desc: { zh: '长满野蔷薇的山坡，风里有花粉，也有雷声。', en: 'Hillsides covered in wild roses. The wind carries pollen, and thunder.' } },
   { id: 'ardorhine', zh: '灼明', en: 'Ardorhine', area: { zh: '南部烬痕1协', en: 'Southern Jinhen, District 1' },
-    tier: 3, rec: 35, days: 10, intel: 50, lv: 11, clan: 'ember',
+    tier: 3, rec: 55, days: 10, intel: 50, lv: 11, clan: 'ember',
     el: { s: 5, t: 2 }, cat: { min: 3, bst: 2, rel: 1, cry: 0.3 },
     desc: { zh: '火山口附近的石头都是烫的。烬翼氏族的领地。', en: 'Even the stones near the crater are hot. Emberthrone territory.' } },
   { id: 'frostfang', zh: '苍牙', en: 'Frostfang', area: { zh: '北部苍阙1协', en: 'Northern Cangque, District 1' },
-    tier: 3, rec: 45, days: 12, intel: 60, lv: 13, clan: 'frost',
+    tier: 3, rec: 67, days: 12, intel: 60, lv: 13, clan: 'frost',
     el: { f: 5, d: 2 }, cat: { min: 2, bst: 2, flo: 1, rel: 1, cry: 0.3 },
     desc: { zh: '冰山像獠牙一样刺向天空。霜息氏族的领地。', en: 'Icebergs pierce the sky like fangs. Frostshroud territory.' } },
   { id: 'crimtwlit', zh: '绯暗', en: 'Crimtwlit', area: { zh: '西部嶂渊1协', en: 'Western Zhangyuan, District 1' },
-    tier: 3, rec: 55, days: 12, intel: 70, lv: 15, clan: 'necro',
+    tier: 3, rec: 78, days: 12, intel: 70, lv: 15, clan: 'necro',
     el: { c: 4, e: 3 }, cat: { rel: 3, bst: 2, flo: 1, min: 1, cry: 0.3 },
     desc: { zh: '这里的暮色永远是红的。冥骸氏族的领地。', en: 'Dusk here is always red. Necroclave territory.' } },
   { id: 'aetholith', zh: '星屿', en: 'Aetholith', area: { zh: '中部极夜2协', en: 'Central Jiye, District 2' },
-    tier: 4, rec: 80, days: 15, intel: 120, lv: 19,
+    tier: 4, rec: 90, days: 15, intel: 120, lv: 19,
     el: { s: 1, f: 1, p: 1, d: 1, c: 1, t: 1, e: 1 }, cat: { min: 2, rel: 2, bst: 1, flo: 1, cry: 0.6 },
     desc: { zh: '极夜协的星之岛，七种元素在这里交汇。', en: 'The star isle of Jiye, where all seven elements meet.' } },
   { id: 'uttermark', zh: '外缘', en: 'Uttermark', area: { zh: '北部苍阙5协', en: 'Northern Cangque, District 5' },
-    tier: 5, rec: 120, days: 20, intel: 200, lv: 24,
+    tier: 5, rec: 150, days: 20, intel: 200, lv: 24,
     el: { f: 3, d: 3, e: 2, s: 1, p: 1, c: 1, t: 1 }, cat: { min: 2, bst: 2, rel: 2, flo: 1, cry: 0.8 },
     desc: { zh: '龙巢的北方尽头，再往外就是巨海 Zylmorak。', en: 'The northern edge of Dragonest. Beyond lies the great sea, Zylmorak.' } }
 ];
@@ -722,7 +722,7 @@ var FAVOR_UPS = [
 ];
 
 /* 派遣的路费（铜翎），按地点的远近分级 */
-var DEST_COST = { 1: 6, 2: 18, 3: 48, 4: 144, 5: 360 };
+var DEST_COST = { 1: 60, 2: 180, 3: 480, 4: 1440, 5: 3600 };
 
 /* Ciorre 每次旅行留下的“旅行见闻”带来的永久效果（每层） */
 var MEMORY_EFF = { 'mult.coins': 0.05, custMult: 0.03, itemValue: 0.02 };
