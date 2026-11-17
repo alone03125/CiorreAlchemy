@@ -165,7 +165,7 @@ var JOBS = [
     desc: { zh: '趴在书角里看书，偶尔会看睡着。侵蚀属性的小龙读得懂风化的碑文。', en: 'Reads in the nook and sometimes dozes off. Erode dragonlings can read weathered inscriptions.' },
     req: function (s) { return s.bld.nook > 0; } },
   { id: 'gardener', zh: '园丁', en: 'Gardener', prod: {}, els: ['d'],
-    desc: { zh: '在草地上收获、补种、浇水、施肥，一次只做一件事。沉沦属性的小龙浇水从来不用水桶。', en: 'Harvests, replants, waters and fertilizes the meadow, one chore at a time. Drown dragonlings never need a bucket.' },
+    desc: { zh: '在草地上收获、补种、浇水、施肥。沉沦属性的小龙浇水从来不用水桶。', en: 'Harvests, replants, waters and fertilizes the meadow, one chore at a time. Drown dragonlings never need a bucket.' },
     req: function (s) { return !!s.tech.agronomy; } },
   { id: 'cook', zh: '厨师', en: 'Cook', prod: {}, els: ['s', 'f'],
     desc: { zh: '在后厨推进制作进度，按目标库存补货。灼燃管烤，冰封管冻。', en: 'Pushes the kitchen\'s progress bar forward and restocks up to target. Scorch bakes, Freeze chills.' },
@@ -188,7 +188,7 @@ var MANUAL_SERVE = 0.5;     // 按住“招待顾客”时每秒的招待进度
 var MANUAL_COOK = 0.8;      // 按住“制作”时每秒的后厨工作量
 var MANUAL_FARM = 1.2;      // 按住草地按钮时每秒的工作量
 var FARM_WORK = { harvest: 0.6, plant: 0.4, water: 25, fert: 20 }; // 收获与播种所需工作量；每单位工作量浇水与施肥的点数
-var FERT_PER_POINT = 0.2;   // 每点地力消耗的肥料
+var FERT_PER_POINT = 0.15;   // 每点地力消耗的肥料
 var BASE_CUSTOMERS = 1;     // 每个游戏日的基础客流（位）
 var BASE_QUEUE = 5;         // 基础等候上限
 var CARETAKER_HAPPY = 1.5;  // 每位保育员提供的幸福度
@@ -450,7 +450,7 @@ var BUILDINGS = [
     flavor: { zh: '往里扔硬币许愿的人很多，捞硬币的龙更多。', en: 'Many toss coins in to make a wish. Even more dragons fish them out.' },
     req: function (s) { return !!s.tech.agronomy; } },
   { id: 'compost', cat: 'farm', zh: '堆肥箱', en: 'Compost Bin', cost: { firewood: 40 }, ratio: 1.15,
-    eff: { 'prod.fertilizer': 0.012 },
+    eff: { 'prod.fertilizer': 0.04 },
     desc: { zh: '把咖啡渣和果皮变成肥料。炼金失败的杂质也可以扔进来。', en: 'Turns coffee grounds and peels into fertilizer. Alchemy impurities can go in too.' },
     flavor: { zh: '气味很有层次。', en: 'The smell is complex.' },
     req: function (s) { return !!s.tech.agronomy; } },
