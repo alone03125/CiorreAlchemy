@@ -41,7 +41,7 @@ function bandColor(lv) {
 function alchEnergy(ids) {
   const p = alchPoints(ids);
   const lvf = Math.min(50, Math.cbrt(p));
-  return { p: p, lvf: lvf, max: clamp(Math.floor(lvf + 1e-9), 1, 50), frac: lvf / 50 };
+  return { p: p, lvf: lvf, max: ids.length ? alchRange(ids).max : 1, frac: lvf / 50 };
 }
 
 function buildHepta() {
@@ -142,7 +142,7 @@ function buildHepta() {
 }
 
 /* 炼金点数的能量条：长度按“点数的立方根 / 50”，刻度是各个等级区间的分界；
- * 点数上涨时数字会滚动、能量条闪过一道光，并飘出增加的点数；减少时能量条慢慢退下去 */
+ * 点数上涨时数字会滚动，并飘出增加的点数；减少时能量条慢慢退下去 */
 function buildAlchGauge() {
   const s = G.s;
   const g = h('div', { class: 'agauge' });
@@ -164,7 +164,6 @@ function buildAlchGauge() {
     if (lastP === null) { shown = en.p; lastP = en.p; }
     if (en.p !== lastP) {
       if (en.p > lastP + 0.5) {
-        retrigger(barEl, 'glint');
         const d = h('span', { class: 'ag-delta', text: '+' + fmt(en.p - lastP, 0) });
         head.appendChild(d);
         setTimeout(() => d.remove(), 1200);

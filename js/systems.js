@@ -832,6 +832,9 @@ function alchRange(ids) {
   var max = clamp(Math.floor(Math.cbrt(p) + 1e-9), 1, 50);
   var fl = Math.min(0.6, eff('alchFloor'));
   var min = Math.max(1, Math.ceil(max * fl));
+  /* 产物的最低等级不会低于材料里等级最低的那件 */
+  /* 下限不会高于点数决定的上限：点数不够时，产物照样只能到上限 */
+  if (ids.length) min = Math.max(min, Math.min.apply(null, ids.map(function (id) { return ITEMS[id].lv; })));
   return { p: p, max: max, min: Math.min(min, max) };
 }
 function matchRecipe(ids) {
