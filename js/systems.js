@@ -77,27 +77,45 @@ function autoRefineTick(dt) {
 
 /* ========== 集市淘宝 ==========
  * 工坊有了稳定的翎鸾收入（累计收入达到 1 金翎）后解锁。按住按钮，每翻找一次花 1 金翎，
- * 按权重随机得到一份基础材料，或一件 43 级以下的炼金物品，相当于抽卡 */
+ * 随机得到一件 43 级以下的炼金物品，相当于抽卡。v0.4.6 起不再淘到硬币、矿石等基础资源 */
 var MARKET_COST = QUILL_GOLD, MARKET_WORK = 1.2;   // 每翻找一次大约要按住 1.2 秒
 var MARKET_POOL = [
-  { res: 'coins', min: 1500, max: 4000, w: 18 },
-  { res: 'firewood', min: 20, max: 60, w: 16 },
-  { res: 'ore', min: 60, max: 180, w: 16 },
-  { res: 'lore', min: 150, max: 500, w: 14 },
-  { res: 'fertilizer', min: 10, max: 30, w: 8 },
-  { res: 'intel', min: 3, max: 8, w: 6 },
-  { item: true, w: 28 },
+  { item: true, w: 100 },
   { lux: true, w: 0 }   // 研究“淘宝门道”后才会出现，权重来自效果 marketLux
 ];
+/* 物品等级分档：先按 p（百分比）挑一档，再在档内挑等级。
+ * 档内没有 lvW 时各等级等概率；有 lvW 时按它从低到高给权重 */
+var MARKET_TIERS = [
+  { from: 1, to: 10, p: 50 },
+  { from: 11, to: 20, p: 32 },
+  { from: 21, to: 30, p: 13 },
+  { from: 31, to: 36, p: 4, lvW: [7, 6, 5, 4, 3, 2] },
+  { from: 37, to: 42, p: 1, lvW: [7, 6, 5, 4, 3, 2] }
+];
 var MARKET_MAX_LV = 42;
+/* 单个等级被选中的概率（0 到 1），说明与测试用 */
+function marketLvChance(lv) {
+  for (var i = 0; i < MARKET_TIERS.length; i++) {
+    var t = MARKET_TIERS[i];
+    if (lv < t.from || lv > t.to) continue;
+    var n = t.to - t.from + 1, w = t.lvW ? t.lvW[lv - t.from] : 1;
+    var tw = t.lvW ? t.lvW.reduce(function (a, b) { return a + b; }, 0) : n;
+    return t.p / 100 * w / tw;
+  }
+  return 0;
+}
 function marketUnlocked() {
   var s = G.s;
   return s.bld.workshop > 0 && (!!s.flags.market || (s.stats.quillEarned || 0) >= QUILL_GOLD);
 }
 function canMarket() { return marketUnlocked() && !tripAway() && G.s.res.quill >= MARKET_COST - 1e-9; }
-/* 物品：等级偏低（平均十几级），同一等级里按稀有度权重抽取；特殊物品不会出现 */
+/* 物品：按 MARKET_TIERS 挑等级，同一等级里按稀有度权重抽取；特殊物品不会出现。
+ * 万一某个等级没有物品，就往两边找最近的等级 */
 function marketItem() {
-  var lv = 1 + Math.floor(MARKET_MAX_LV * Math.pow(Math.random(), 1.8));
+  var t = wpick(MARKET_TIERS.map(function (x) { return [x, x.p]; }));
+  var lvs = [];
+  for (var l = t.from; l <= t.to; l++) lvs.push([l, t.lvW ? t.lvW[l - t.from] : 1]);
+  var lv = wpick(lvs);
   for (var d = 0; d < MARKET_MAX_LV; d++) {
     var pool = ITEM_LIST.filter(function (it) { return !it.x && it.lv <= MARKET_MAX_LV && (it.lv === lv - d || it.lv === lv + d); });
     if (pool.length) return wpick(pool.map(function (it) { return [it, RARITY.weight[it.r]]; }));
@@ -109,9 +127,7 @@ function marketDraw() {
   if (!canMarket()) return null;
   addRes('quill', -MARKET_COST);
   s.stats.marketDraws = (s.stats.marketDraws || 0) + 1;
-  /* 已经装满的资源不会抽到，免得白花钱 */
-  var e = wpick(MARKET_POOL.filter(function (x) { return !x.res || (RES_MAP[x.res].unlocked(s) && s.res[x.res] < capOf(x.res) - x.min); })
-    .map(function (x) { return [x, x.lux ? eff('marketLux') : x.w]; }));
+  var e = wpick(MARKET_POOL.map(function (x) { return [x, x.lux ? eff('marketLux') : x.w]; }));
   var got, rare = false;
   if (e.lux) {
     /* 贵重品：按掉落权重挑一种，越稀有的给得越少 */
@@ -121,16 +137,12 @@ function marketDraw() {
     got = resAmtPair(l.id, ln);
     rare = l.tier >= 3;
     s.market.last.unshift({ res: l.id, n: ln });
-  } else if (e.item) {
+  } else {
     var it = marketItem();
     addItem(it.id, 1);
     got = itemPair(it.id);
     rare = it.r >= 4 || it.lv >= 30;
     s.market.last.unshift({ item: it.id });
-  } else {
-    var n = randInt(e.min, e.max), added = addRes(e.res, n);
-    got = resAmtPair(e.res, Math.floor(added));
-    s.market.last.unshift({ res: e.res, n: Math.floor(added) });
   }
   if (s.market.last.length > 6) s.market.last.length = 6;
   logC('shop', rare ? TXT.market.rare : TXT.market.got, got);
