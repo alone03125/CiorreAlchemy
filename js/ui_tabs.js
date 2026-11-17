@@ -3,7 +3,7 @@
 function tabKey(id) {
   const s = G.s;
   switch (id) {
-    case 'nest': return s.flags.firewood + '|' + s.tech.firewood_contract;
+    case 'nest': return s.flags.firewood + '|' + s.tech.firewood_contract + '|' + marketUnlocked();
     case 'dragons': return JOBS.filter(j => j.req(s)).map(j => j.id).join(',') + s.tech.tea_party;
     case 'research': return TECHS.filter(techVisible).map(t => t.id).join(',') + '|' + Object.keys(s.tech).length + s.ui.showDoneTech;
     case 'workshop': return [goodsUnlocked().length > 0, s.rhasari.joined, foodUnlocked(FOOD_MAP.pudding, s), s.tech.wanderlust, displaySlots() > 0, s.lysari.visits > 0, windowUnlocked(), FOODS.some(f => foodUnlocked(f, s))].join(',');
@@ -42,7 +42,12 @@ function buildNest(el) {
       { label: T('all'), click: () => refineFirewood(refineMax()), enabled: () => refineMax() >= 1 && !tripAway() }
     ]
   }));
+  if (marketUnlocked()) {
+    grid.appendChild(holdButton({ label: T('market'), work: dt => marketWork(dt), enabled: canMarket, progress: () => s.market.prog, cls: 'special',
+      tip: () => tipSimple(T('market'), T('market_d', MARKET_MAX_LV + 1)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.quill), s.res.quill, MARKET_COST, 'quill') }));
+  }
   el.appendChild(grid);
+  if (marketUnlocked()) el.appendChild(liveText('div', () => s.market.last.length ? T('market_last') + s.market.last.map(x => x.item ? L(ITEMS[x.item]) + ' Lv' + ITEMS[x.item].lv : L(RES_MAP[x.res]) + ' ' + fmt(x.n)).join(T('list_sep')) : '', 'line dim small'));
   if (s.tech.firewood_contract) el.appendChild(h('div', { class: 'line' }, checkbox(T('auto_refine'), () => s.shop.autoRefine, v => { s.shop.autoRefine = v; }, () => tipSimple(T('auto_refine'), T('auto_refine_d')))));
   el.appendChild(region(() => s.ui.bldCat + '|' + BUILDINGS.filter(bldVisible).map(b => b.id).join(','), r => {
     const vis = BUILDINGS.filter(bldVisible);
@@ -83,8 +88,9 @@ function buildDragons(el) {
   mg.appendChild(button({ label: T('optimize'), click: optimizeJobs, enabled: () => s.dragons.some(d => d.job), tip: () => tipSimple(T('optimize'), T('optimize_d')) }));
   mg.appendChild(button({ label: T('unassign_all'), click: unassignAll, enabled: () => s.dragons.some(d => d.job && !d.away), tip: () => tipSimple(T('unassign_all'), T('unassign_all_d')) }));
   if (s.tech.tea_party) mg.appendChild(button({
-    label: () => T('hold_party') + (s.party.days > 0 ? ' (' + Math.ceil(s.party.days) + T('day_unit') + ')' : ''), click: holdParty, enabled: canHoldParty, cls: 'special',
-    tip: () => tipSimple(T('hold_party'), T('hold_party_d', PARTY_DAYS)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.coins), s.res.coins, PARTY_COINS, 'coins') + costRow(T('any_goods'), pickGoods('any', PARTY_GOODS).n, PARTY_GOODS)
+    label: () => T('hold_party') + (s.party.days > 0 ? ' (+' + Math.round(partyBonus()) + '%  ' + Math.ceil(s.party.days) + T('day_unit') + ')' : ''), click: openPartyPanel, enabled: () => canHoldParty(), cls: 'special',
+    tip: () => tipSimple(T('hold_party'), T('hold_party_d', PARTY_KINDS, PARTY_ITEMS, PARTY_BONUS, PARTY_DAYS)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.coins), s.res.coins, PARTY_COINS, 'coins') +
+      (partyRunning() ? '<div class="tt-note">' + esc(T('party_no_extend')) + '</div>' : '')
   }));
   el.appendChild(mg);
 
@@ -370,14 +376,23 @@ function buildMenu(r) {
   const list = FOODS.filter(f => foodUnlocked(f, s) && (view === 'proc' ? f.kind === 'proc' : f.kind !== 'proc'));
   if (!list.length) { r.appendChild(note(view === 'proc' ? T('no_proc') : T('no_match'))); return; }
   const isGoods = view !== 'proc';
-  const heads = ['m_name', 'm_stock', 'm_price', isGoods ? 'm_demand' : null, 'm_target', 'm_make', isGoods ? 'm_sale' : null, isGoods && s.bld.snackshelf ? 'm_snack' : null].filter(Boolean);
+  const heads = ['m_pri', 'm_name', 'm_stock', 'm_price', isGoods ? 'm_demand' : null, 'm_target', 'm_make', isGoods ? 'm_sale' : null, isGoods && s.bld.snackshelf ? 'm_snack' : null].filter(Boolean);
+  r.appendChild(liveText('div', () => {
+    const pf = priorityFood();
+    return pf ? T('pri_now', L(pf), Math.floor(s.res[pf.id] || 0), foodTarget(pf.id)) : T('pri_none');
+  }, 'line dim'));
   const t = h('table', { class: 'tbl menu' });
   t.appendChild(h('tr', null, heads.map(k => h('th', { text: T(k), tip: () => tipSimple(T(k), T(k + '_d')) }))));
   list.forEach(f => {
     const tin = h('input', { class: 'inp num', type: 'number', min: 0, max: 9999, value: foodTarget(f.id) });
     tin.addEventListener('change', () => { setTarget(f.id, +tin.value); UI.refreshAll(); });
+    const star = lbtn('☆', () => setPriority(f.id), () => s.kitchen.priority === f.id || canSetPriority(f.id),
+      () => tipSimple(T('m_pri'), T('m_pri_d')) + (canSetPriority(f.id) || s.kitchen.priority === f.id ? '' : '<div class="tt-note">' + esc(T('pri_full')) + '</div>'));
+    star.classList.add('pri-star');
+    onUpdate(() => { const on = s.kitchen.priority === f.id; setText(star, on ? '★' : '☆'); star.classList.toggle('on', on); });
     const row = h('tr', null,
-      h('td', { tip: () => tipFood(f.id) }, h('span', { text: L(f) }), h('span', { class: 'dim small', text: ' ' + L(STATIONS[f.st]) })),
+      h('td', null, star),
+      h('td', { tip: () => tipFood(f.id) + (blockedByPriority(f.id) ? '<div class="tt-note">' + esc(T('pri_blocked', L(priorityFood()))) + '</div>' : '') }, h('span', { text: L(f) }), h('span', { class: 'dim small', text: ' ' + L(STATIONS[f.st]) })),
       liveText('td', () => fmt(Math.floor(s.res[f.id])) + '/' + fmt(capOf(f.id)), 'num'),
       liveText('td', () => fmtQuill(isGoods ? goodPrice(f.id) : windowPrice(f.id)), 'num'),
       isGoods ? h('td', { class: 'demand' }, bar(() => (demandOf(f.id) - 0.4) / 1.2, 'thin dem'), liveText('span', () => Math.round(demandOf(f.id) * 100) + '%', 'small')) : null,
@@ -386,6 +401,7 @@ function buildMenu(r) {
         enabled: () => !tripAway() && canManualCook(f.id), progress: () => manualCookProg(f.id), tip: () => tipSimple(T('m_make'), T('m_make_d')) + '<div class="tt-sep"></div>' + tipFood(f.id) })),
       isGoods ? h('td', null, checkbox('', () => s.shop.sale[f.id] !== false, v => { s.shop.sale[f.id] = v; })) : null,
       isGoods && s.bld.snackshelf ? h('td', null, checkbox('', () => !!s.shop.staffSnack[f.id], v => { s.shop.staffSnack[f.id] = v; })) : null);
+    onUpdate(() => row.classList.toggle('blocked', blockedByPriority(f.id)));
     t.appendChild(row);
   });
   r.appendChild(h('div', { class: 'tbl-wrap' }, t));
@@ -564,52 +580,26 @@ function buildExpedition(el) {
 function buildAlchemy(el) {
   const s = G.s;
   el.appendChild(note(T('al_rules')));
-  el.appendChild(region(() => s.alch.slots.join(',') + '|' + G.invVer + '|' + s.rhasari.joined, r => {
-    const miss = alchMissing();
-    const row = h('div', { class: 'slots' });
-    for (let i = 0; i < 7; i++) {
-      const id = s.alch.slots[i];
-      if (id) {
-        const it = ITEMS[id];
-        row.appendChild(h('div', { class: 'slot filled' + (miss[id] ? ' missing' : ''), tip: () => tipItem(id) + '<div class="tt-note">' + esc(T('al_click_remove')) + '</div>', onclick: act(() => slotRemove(i)) },
-          h('div', { class: 'slot-n', style: rarityStyle(it.r), text: L(it) }), h('div', { class: 'slot-l dim', text: 'Lv ' + it.lv + '  R' + it.r })));
-      } else row.appendChild(h('div', { class: 'slot empty', text: T('al_empty') }));
-    }
-    r.appendChild(row);
-    const ids = s.alch.slots;
-    const rg = alchRange(ids), rec = matchRecipe(ids);
-    if (ids.length) {
-      r.appendChild(h('div', { class: 'line' }, T('al_points', String(rg.p), fmt(Math.sqrt(rg.p), 2), rg.max, rg.min, rg.max)));
-      if (rec) r.appendChild(note(s.recipes[rec.id] ? T('al_recipe_known', L(ITEMS[rec.out])) : T('al_recipe_unknown'), 'good'));
-      else {
-        const band = LEVEL_BANDS.filter(b => b.to >= rg.min && b.from <= rg.max);
-        r.appendChild(h('div', { class: 'line dim' }, T('al_rarity_range', Math.min(...band.map(b => b.rmin)), Math.max(...band.map(b => b.rmax)))));
-      }
-    } else r.appendChild(note(T('al_pick')));
-  }));
+  el.appendChild(buildHepta());
   el.appendChild(liveText('div', () => {
-    const g = s.alch.guard && s.rhasari.joined;
-    return T('al_fail') + [1, 2, 3, 4, 5, 6].map(x => 'R' + x + ' ' + pctAbs(failChance(x, g))).join('  ');
+    const g = s.alch.guard && s.rhasari.joined, v = phaseMod();
+    return T('al_fail') + [1, 2, 3, 4, 5, 6].map(x => 'R' + x + ' ' + pctAbs(failChance(x, g))).join('  ') + '    ' +
+      T('al_moon', T('phase_' + moonPhase()) + ' ' + (v > 0 ? '+' : v < 0 ? '-' : '') + pctAbs(v));
   }, 'line dim'));
   if (s.rhasari.joined) el.appendChild(h('div', { class: 'line' }, checkbox(T('al_guard'), () => s.alch.guard, v => { s.alch.guard = v; })));
   const g = h('div', { class: 'grid' });
-  g.appendChild(button({ label: T('al_go'), click: transmute, enabled: canTransmute, cls: 'special',
+  g.appendChild(button({ label: T('al_go'), click: startTransmute, enabled: () => canTransmute() && !UI.alchAnim, cls: 'special',
     tip: () => tipSimple(T('al_go'), T('al_go_d')) + '<div class="tt-sep"></div>' + costHtml(alchCost(s.alch.slots)) +
       (s.alch.guard && s.rhasari.joined ? costRow(T('flame'), s.rhasari.flame, 2) : '') }));
-  g.appendChild(button({ label: T('al_clear'), click: () => { s.alch.slots = []; }, enabled: () => s.alch.slots.length > 0 }));
+  g.appendChild(button({ label: T('al_clear'), click: () => { s.alch.slots = []; }, enabled: () => s.alch.slots.length > 0 && !UI.alchAnim }));
   el.appendChild(g);
-  el.appendChild(region(() => s.stats.alch, r => {
+  el.appendChild(liveText('div', () => {
     const l = s.alch.last;
-    if (!l) return;
-    const it = ITEMS[l.out];
-    const box = h('div', { class: 'result' + (l.failed ? ' failed' : '') + (l.recipe ? ' recipe' : ''), tip: () => tipItem(l.out) });
-    box.appendChild(h('div', { class: 'dim', text: T('al_last') }));
-    box.appendChild(h('div', { class: 'res-name', style: rarityStyle(it.r), text: L(it) + '  Lv ' + it.lv + '  Rare ' + it.r }));
-    if (l.failed && l.intended) box.appendChild(h('div', { class: 'dim', text: T('al_almost', L(ITEMS[l.intended])) }));
-    if (l.recipe) box.appendChild(h('div', { class: 'dim', text: T('al_by_recipe') }));
-    else if (l.lv) box.appendChild(h('div', { class: 'dim', text: T('al_rolled', l.lv) }));
-    r.appendChild(box);
-  }));
+    if (!l || (UI.alchAnim && !UI.alchAnim.done)) return '';
+    if (l.failed && l.intended) return T('al_almost', L(ITEMS[l.intended]));
+    if (l.recipe) return T('al_by_recipe');
+    return l.lv ? T('al_rolled', l.lv) : '';
+  }, 'line dim center'));
   el.appendChild(section(T('al_materials')));
   const filt = h('input', { class: 'inp', type: 'text', placeholder: T('search') });
   filt.value = UI.alchFilter;
@@ -659,7 +649,7 @@ function invList(filter, el, sort) {
 function buildTrade(el) {
   const s = G.s;
   el.appendChild(note(T('trade_d')));
-  el.appendChild(region(() => TRADE_PARTNERS.map(p => partnerUnlocked(p)).join(',') + '|' + monthIdx(), r => {
+  el.appendChild(region(() => TRADE_PARTNERS.map(p => partnerUnlocked(p) + ':' + !!caravanTo(p)).join(',') + '|' + monthIdx(), r => {
     TRADE_PARTNERS.forEach(p => {
       const card = h('div', { class: 'card trade' });
       card.appendChild(h('div', { class: 'card-t', style: 'color:' + p.color, text: L(p) }));
@@ -673,19 +663,135 @@ function buildTrade(el) {
       card.appendChild(h('div', { class: 'line small' + (open ? '' : ' warn') }, open ? (best ? T('trade_best') : T('trade_open')) : T('trade_closed'),
         T('list_sep') + T('trade_best_m', p.best.map(m => L(MONTHS[m])).join(T('list_sep'))) +
         (p.closed.length ? T('list_sep') + T('trade_closed_m', p.closed.map(m => L(MONTHS[m])).join(T('list_sep'))) : '')));
-      card.appendChild(h('div', { class: 'stat-row' }, h('span', { class: 'stat-l', text: T('relation') }), bar(() => (s.trade.rel[p.id] || 0) / 100),
+      card.appendChild(h('div', { class: 'stat-row', tip: () => tipSimple(T('relation'), T('relation_d')) }, h('span', { class: 'stat-l', text: T('relation') }), bar(() => (s.trade.rel[p.id] || 0) / 100),
         liveText('span', () => Math.round(s.trade.rel[p.id] || 0) + '  ' + T('trade_mult', pct(tradeMult(p) - 1)), 'stat-v')));
-      card.appendChild(liveText('div', () => T('trade_wants', T('kind_' + p.wants.kind), p.wants.n, tradeWants(p).n) + T('list_sep') + T('trade_cost', fmtQuill(p.cost.quill)), 'line'));
+      card.appendChild(h('div', { class: 'line' }, T('tr_wants', T('kind_' + p.wants.kind), p.days, fmtQuill(p.cost.quill)),
+        h('span', { class: 'dim small', text: '  ' + T('tr_likes', p.el.map(e => L(ELEMENTS[e])).join(T('list_sep'))) })));
       card.appendChild(h('div', { class: 'line small dim' }, T('trade_gives') + p.gives.map(gv => {
         if (gv.seed) return T('seed_of', L(CROP_MAP[gv.seed])) + (cropKnown(CROP_MAP[gv.seed], s) ? T('got_mark') : '');
         const name = gv.res ? L(RES_MAP[gv.res]) : gv.item ? L(ITEMS[gv.item]) : L(ITEMS[CRYSTAL_OF[gv.crystal]]);
         return name + ' ' + gv.min + '~' + gv.max + (gv.ch != null ? ' (' + pctAbs(gv.ch) + ')' : '');
       }).join(T('list_sep'))));
-      card.appendChild(h('div', { class: 'card-b' }, lbtn(T('do_trade'), () => doTrade(p.id), () => canTrade(p),
-        () => tipSimple(T('do_trade'), T('trade_will', goodsPair(tradeWants(p).picked)[LANG])))));
+      const c = caravanTo(p);
+      if (c) {
+        card.appendChild(h('div', { class: 'stat-row' }, h('span', { class: 'stat-l wide', text: T('tr_on_road', c.dragons.length, c.items) }),
+          bar(() => 1 - c.left / c.total), liveText('span', () => T('n_days_left', Math.max(0, Math.ceil(c.left))), 'stat-v')));
+      } else {
+        card.appendChild(h('div', { class: 'card-b' }, lbtn(T('tr_organize'), () => openTradePanel(p), () => canTrade(p),
+          () => tipSimple(T('tr_organize'), T('tr_organize_d', CARAVAN_MIN, CARAVAN_MAX, TRADE_GOODS_MAX)) + '<div class="tt-sep"></div>' + costHtml(p.cost))));
+      }
       r.appendChild(card);
     });
   }));
+}
+
+/* 商品挑选表：sel 为 { 商品 id: 数量 }，list 为可选的商品，max 为总件数上限（不限时为 Infinity） */
+function buildGoodsPicker(r, sel, list, max) {
+  const s = G.s;
+  const total = () => selStats(sel).items;
+  const room = id => Math.max(0, Math.min(Math.floor(s.res[id] || 0), max - (total() - (sel[id] || 0))));
+  const setN = (id, n) => { sel[id] = clamp(Math.floor(n) || 0, 0, room(id)); if (!sel[id]) delete sel[id]; };
+  if (!list.length) { r.appendChild(note(T('pick_none'))); return; }
+  const t = h('table', { class: 'tbl' });
+  t.appendChild(h('tr', null, ['inv_h_name', 'm_stock', 'pick_value', 'pick_take', 'inv_h_act'].map(k => h('th', { text: T(k) }))));
+  list.forEach(f => {
+    const inp = h('input', { class: 'inp num pick-in', type: 'number', min: 0, value: sel[f.id] || 0 });
+    inp.addEventListener('change', () => { setN(f.id, +inp.value); inp.value = sel[f.id] || 0; UI.refreshAll(); });
+    onUpdate(() => { if (document.activeElement !== inp && +inp.value !== (sel[f.id] || 0)) inp.value = sel[f.id] || 0; });
+    t.appendChild(h('tr', { tip: () => tipFood(f.id) },
+      h('td', null, h('span', { text: L(f) }), h('span', { class: 'dim small', text: ' ' + T('kind_' + f.kind) })),
+      liveText('td', () => fmt(Math.floor(s.res[f.id] || 0)), 'num'),
+      h('td', { class: 'num', text: fmtQuill(basePrice(f.id)) }),
+      h('td', null, inp),
+      h('td', { class: 'acts' }, lbtn('+1', () => setN(f.id, (sel[f.id] || 0) + 1), () => room(f.id) > (sel[f.id] || 0)), ' ',
+        lbtn('+10', () => setN(f.id, (sel[f.id] || 0) + 10), () => room(f.id) > (sel[f.id] || 0)), ' ',
+        lbtn(T('all'), () => setN(f.id, room(f.id)), () => room(f.id) > (sel[f.id] || 0)), ' ',
+        lbtn('0', () => setN(f.id, 0), () => (sel[f.id] || 0) > 0))));
+  });
+  r.appendChild(h('div', { class: 'tbl-wrap' }, t));
+  r.appendChild(h('div', { class: 'line' },
+    lbtn(T('pick_spread'), () => {
+      for (const k in sel) delete sel[k];
+      let added = true;
+      while (added && total() < max) {
+        added = false;
+        list.forEach(f => { if (total() < max && (sel[f.id] || 0) < Math.floor(s.res[f.id] || 0)) { sel[f.id] = (sel[f.id] || 0) + 1; added = true; } });
+      }
+    }), ' ', lbtn(T('pick_clear'), () => { for (const k in sel) delete sel[k]; })));
+}
+
+/* 组织商队的面板 */
+function openTradePanel(p) {
+  UI.tradeSel = { partner: p.id, goods: {}, dragons: suggestCaravan(p, CARAVAN_BASE) };
+  openPanel(T('tr_panel_t', L(p)), () => p.id + '|' + homeDragons().map(d => d.id).join(','), r => buildTradePanel(r, p));
+}
+function buildTradePanel(r, p) {
+  const s = G.s, sel = UI.tradeSel;
+  sel.dragons = sel.dragons.filter(id => homeDragons().some(d => d.id === id));
+  r.appendChild(note(T('tr_panel_d', TRADE_BASE_KINDS, fmtQuill(TRADE_BASE_VALUE), TRADE_GOODS_MAX)));
+  r.appendChild(section(T('tr_goods', T('kind_' + p.wants.kind))));
+  buildGoodsPicker(r, sel.goods, GOODS_LIST.filter(f => tradeGoodsOk(p, f.id) && foodUnlocked(f, s) && (s.res[f.id] || 0) >= 1), TRADE_GOODS_MAX);
+  r.appendChild(liveText('div', () => {
+    const st = selStats(sel.goods);
+    return T('tr_goods_sum', st.items, TRADE_GOODS_MAX, st.kinds, fmtQuill(st.value), fmt(goodsMult(st), 2));
+  }, 'panel-sum'));
+
+  r.appendChild(section(T('tr_dragons', CARAVAN_MIN, CARAVAN_MAX)));
+  const home = homeDragons().slice().sort((a, b) => caravanFit(b, p) - caravanFit(a, p));
+  r.appendChild(h('div', { class: 'line' }, T('tr_auto') + ' ',
+    [5, 10, 15].map(n => [lbtn(String(n), () => { sel.dragons = suggestCaravan(p, n); }), ' '])));
+  const t = h('table', { class: 'tbl' });
+  t.appendChild(h('tr', null, ['', 'tr_h_name', 'element', 'gl_short', 'cl_short', 'tr_h_carry'].map(k => h('th', { text: k ? T(k) : '' }))));
+  home.forEach(d => {
+    t.appendChild(h('tr', null,
+      h('td', null, checkbox('', () => sel.dragons.indexOf(d.id) >= 0, v => {
+        if (v && sel.dragons.indexOf(d.id) < 0 && sel.dragons.length < CARAVAN_MAX) sel.dragons.push(d.id);
+        if (!v) sel.dragons = sel.dragons.filter(x => x !== d.id);
+      })),
+      h('td', { text: d.name + (d.job ? '  ' + L(JOB_MAP[d.job]) : '') }), h('td', null, elTag(d.el)),
+      h('td', { text: String(d.gl) }), h('td', { text: String(d.cl) }),
+      h('td', { class: p.el.indexOf(d.el) >= 0 ? 'match' : 'dim', text: '×' + fmt(dragonCarry(d, p), 2) })));
+  });
+  r.appendChild(h('div', { class: 'tbl-wrap' }, t));
+  r.appendChild(liveText('div', () => {
+    const cs = caravanStats(p, sel.dragons);
+    return T('tr_car_sum', cs.n, CARAVAN_MIN, CARAVAN_MAX, fmt(cs.mult, 2), Math.round(cs.avgCl), pctAbs(cs.lossChance), pctAbs(cs.lossMax));
+  }, 'panel-sum'));
+
+  r.appendChild(section(T('tr_result')));
+  r.appendChild(liveText('div', () => {
+    const m = goodsMult(selStats(sel.goods)) * caravanStats(p, sel.dragons).mult * tradeMult(p);
+    return T('tr_total', fmt(m, 2), p.days) + T('colon') + tradePreview(p, m).join(T('list_sep'));
+  }, 'line'));
+  r.appendChild(h('div', { class: 'line' }, liveText('span', () => {
+    const e = caravanProblem(p, sel.goods, sel.dragons);
+    return e ? T(e, CARAVAN_MIN, CARAVAN_MAX) : '';
+  }, 'warn small')));
+  const g = h('div', { class: 'grid' });
+  g.appendChild(button({ label: T('tr_go'), cls: 'special', enabled: () => !caravanProblem(p, sel.goods, sel.dragons),
+    click: () => { if (sendCaravan(p.id, sel.goods, sel.dragons) && UI.panel) UI.panel.close(); },
+    tip: () => tipSimple(T('tr_go'), T('tr_go_d', p.days)) + '<div class="tt-sep"></div>' + costHtml(p.cost) }));
+  r.appendChild(g);
+}
+
+/* 茶会的面板 */
+function openPartyPanel() {
+  UI.partySel = {};
+  openPanel(T('pt_panel_t'), () => GOODS_LIST.filter(f => foodUnlocked(f, G.s)).length, buildPartyPanel);
+}
+function buildPartyPanel(r) {
+  const s = G.s, sel = UI.partySel;
+  r.appendChild(note(T('pt_panel_d', PARTY_KINDS, PARTY_ITEMS, PARTY_BONUS, PARTY_DAYS, PARTY_MIN_KINDS, PARTY_MIN_ITEMS)));
+  buildGoodsPicker(r, sel, GOODS_LIST.filter(f => partyGoodsOk(f.id) && foodUnlocked(f, s) && (s.res[f.id] || 0) >= 1), Infinity);
+  r.appendChild(liveText('div', () => {
+    const pl = partyPlan(sel);
+    return T('pt_sum', pl.kinds, pl.items, fmt(pl.bonus, 1), fmt(pl.days, 1));
+  }, 'panel-sum'));
+  const g = h('div', { class: 'grid' });
+  g.appendChild(button({ label: T('pt_go'), cls: 'special', enabled: () => canHoldParty(sel),
+    click: () => { if (holdParty(sel) && UI.panel) UI.panel.close(); },
+    tip: () => tipSimple(T('pt_go'), partyPlan(sel).ok ? '' : T('pt_min', PARTY_MIN_KINDS, PARTY_MIN_ITEMS)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.coins), s.res.coins, PARTY_COINS, 'coins') }));
+  r.appendChild(g);
 }
 
 /* ---------- 仓库与图鉴 ---------- */

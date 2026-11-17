@@ -42,7 +42,10 @@ var CATS = {
 /* 稀有度 */
 var RARITY = {
   weight: { 1: 60, 2: 30, 3: 15, 4: 8, 5: 4, 6: 2 },
-  valueMult: { 1: 1, 2: 1.5, 3: 2.3, 4: 3.6, 5: 6, 6: 10 },
+  /* 价值倍率：v0.4.1 起高稀有度更值钱 */
+  valueMult: { 1: 1, 2: 1.6, 3: 2.6, 4: 4.5, 5: 8, 6: 15 },
+  /* 炼金点数倍率：一件材料提供“等级的立方 × 倍率”点 */
+  points: { 1: 0.25, 2: 0.4, 3: 0.55, 4: 0.6, 5: 0.85, 6: 1.0 },
   fail: { 1: 0.35, 2: 0.20, 3: 0.10, 4: 0.05, 5: 0, 6: 0 },
   color: { 1: '#888', 2: '#3f8f3f', 3: '#2f6fb5', 4: '#8a3fb5', 5: '#d07a00', 6: '#c8283c' }
 };
@@ -181,9 +184,9 @@ var JOBS = [
     req: function (s) { return !!s.tech.customs; } }
 ];
 /* 进度条式的工作：店员、厨师、园丁按速度填充进度条，玩家可以按住按钮亲自加速 */
-var CLERK_SERVE = 0.2;      // 每位店员每秒填充的招待进度（1 = 招待完一位顾客）
-var COOK_SPEED = 0.25;      // 每位厨师每秒提供的后厨工作量
-var GARDEN_SPEED = 0.5;     // 每位园丁每秒提供的草地工作量
+var CLERK_SERVE = 0.08;     // 每位店员每秒填充的招待进度（1 = 招待完一位顾客）；v0.4 从 0.2 大幅下调
+var COOK_SPEED = 0.1;       // 每位厨师每秒提供的后厨工作量；v0.4 从 0.25 大幅下调
+var GARDEN_SPEED = 0.2;     // 每位园丁每秒提供的草地工作量；v0.4 从 0.5 大幅下调
 var MANUAL_SERVE = 0.5;     // 按住“招待顾客”时每秒的招待进度
 var MANUAL_COOK = 0.8;      // 按住“制作”时每秒的后厨工作量
 var MANUAL_FARM = 1.2;      // 按住草地按钮时每秒的工作量
@@ -271,9 +274,9 @@ var BUILDINGS = [
     req: function (s) { return !!s.tech.elementology; } },
 
   /* 生活 */
-  /* 价格曲线在中期前拉伸 1.4 倍左右：原版第 10 次购买的单价，这里第 14 次才达到；此后保持原版往后推 4 次 */
+  /* 价格曲线在中期前拉伸 1.2 倍左右：原版第 10 次购买的单价，这里第 12 次才达到；此后保持原版往后推 2 次 */
   { id: 'nest', cat: 'life', zh: '幼龙窝', en: 'Dragonling Nest', cost: { firewood: 5 }, ratio: 2.5,
-    stretch: { until: 13, k: 9 / 13, shift: 4 },
+    stretch: { until: 11, k: 9 / 11, shift: 2 },
     eff: { housing: 2 },
     desc: { zh: '铺满干草的小窝，能住下两只小龙。', en: 'A straw-lined nook with room for two dragonlings.' },
     flavor: { zh: '只要有零花钱，小龙们什么活都愿意干。', en: 'As long as there is pocket money, dragonlings will do any job.' },
@@ -323,7 +326,7 @@ var BUILDINGS = [
   { id: 'archive', cat: 'lore', zh: '情报档案室', en: 'Intel Archive', cost: { firewood: 300, ore: 100 }, ratio: 1.25,
     eff: { 'cap.intel': 30 },
     desc: { zh: '提高情报上限。解锁信使。', en: 'Raises the Intel limit. Unlocks Couriers.' },
-    flavor: { zh: '每份情报都按 Rakuakira 规定的格式归档。', en: 'Every report is filed in the format Rakuakira prescribes.' },
+    flavor: { zh: '每份情报都按 Rakuakira 喜欢的样子归档，整整齐齐。', en: 'Every report is filed the way Rakuakira likes it, neat and tidy.' },
     req: function (s) { return !!s.tech.intelligence; } },
   { id: 'observatory', cat: 'lore', zh: '观星台', en: 'Stargazing Deck', cost: { firewood: 200, ore: 750, lore: 1000 }, ratio: 1.1,
     eff: { starChance: 0.002, 'cap.lore': 250 },
@@ -584,6 +587,9 @@ var TECHS = [
   { id: 'window_art', zh: '陈列艺术', en: 'Window Dressing', cost: { lore: 3000, intel: 10 }, eff: { windowChance: 0.04, windowSlots: 1 },
     desc: { zh: '学会把半成品摆得好看。橱窗成交率提高，陈列位 +1。', en: 'Learn to arrange prepared goods nicely. Better window sales and one more slot.' },
     req: function (s) { return !!s.tech.advertising; } },
+  { id: 'market_savvy', zh: '淘宝门道', en: 'Market Savvy', cost: { lore: 3200, intel: 12 }, eff: { marketLux: 14 },
+    desc: { zh: '摸清了摊主们把好东西藏在哪一层箱子底下。在集市淘宝时，有机会淘到贵重品。', en: 'You learn which crate bottom the stallholders hide the good stuff under. Market rummaging can now turn up treasures.' },
+    req: function (s) { return !!s.flags.market && !!s.tech.hospitality; } },
   { id: 'wanderlust', zh: '旅行癖', en: 'Wanderlust', cost: { lore: 3000, quill: 144 },
     desc: { zh: '承认吧，你就是想出去玩。解锁 Ciorre 的旅行。', en: 'Admit it, you just want to go out. Unlocks Ciorre\'s trips.' },
     req: function (s) { return !!s.tech.courier; } },
@@ -656,46 +662,46 @@ var TECHS = [
     req: function (s) { return !!s.tech.precision; } }
 ];
 
-/* 派遣地点。el 为元素偏好权重，cat 为类别偏好权重，lv 为基础物品等级，rec 为推荐战斗等级 */
+/* 派遣地点。v0.4 起天数为原来的 3 倍。el 为元素偏好权重，cat 为类别偏好权重，lv 为基础物品等级，rec 为推荐战斗等级 */
 var DESTS = [
   { id: 'lunavite', zh: '邀月', en: 'Lunavite', area: { zh: '中部岚砂3协', en: 'Central Lansha, District 3' },
-    tier: 1, rec: 5, days: 4, intel: 0, lv: 2, clan: 'thorn',
+    tier: 1, rec: 5, days: 12, intel: 0, lv: 2, clan: 'thorn',
     el: { p: 3, t: 2, e: 1 }, cat: { flo: 3, min: 2, bst: 1, rel: 1, con: 0.5 },
     desc: { zh: '离天穹最近的岚砂协。夜里的百合会朝着月亮开。', en: 'The Lansha district closest to Aethorf. Its lilies open toward the moon at night.' } },
   { id: 'noctflame', zh: '燃夜', en: 'Noctflame', area: { zh: '中部烬痕4协', en: 'Central Jinhen, District 4' },
-    tier: 1, rec: 13, days: 5, intel: 8, lv: 3, clan: 'ember',
+    tier: 1, rec: 13, days: 15, intel: 8, lv: 3, clan: 'ember',
     el: { s: 4, t: 2 }, cat: { min: 3, rel: 2, bst: 1, flo: 1 },
     desc: { zh: '地热让这里的夜晚也是暖的。', en: 'Geothermal heat keeps the nights warm here.' } },
   { id: 'abysweald', zh: '沧麓', en: 'Abysweald', area: { zh: '中部苍阙6协', en: 'Central Cangque, District 6' },
-    tier: 1, rec: 22, days: 5, intel: 10, lv: 4, clan: 'frost',
+    tier: 1, rec: 22, days: 15, intel: 10, lv: 4, clan: 'frost',
     el: { d: 4, f: 2 }, cat: { flo: 2, bst: 2, min: 1, rel: 1 },
     desc: { zh: '山脚下的湖泊群，雾气终年不散。', en: 'Lakes at the foot of the mountains, wrapped in mist all year.' } },
   { id: 'vacuumyth', zh: '虚传', en: 'Vacuumyth', area: { zh: '中部嶂渊5协', en: 'Central Zhangyuan, District 5' },
-    tier: 2, rec: 36, days: 7, intel: 20, lv: 6, clan: 'necro',
+    tier: 2, rec: 36, days: 21, intel: 20, lv: 6, clan: 'necro',
     el: { c: 3, e: 3 }, cat: { rel: 3, min: 2, flo: 1, bst: 1 },
     desc: { zh: '据说这里的一切都只存在于传闻中。小龙们回来时总说不清自己去过哪里。', en: 'They say everything here exists only in rumor. Dragonlings never quite remember where they went.' } },
   { id: 'monifern', zh: '山薇', en: 'Monifern', area: { zh: '东部岚砂2协', en: 'Eastern Lansha, District 2' },
-    tier: 2, rec: 46, days: 8, intel: 30, lv: 8, clan: 'thorn',
+    tier: 2, rec: 46, days: 24, intel: 30, lv: 8, clan: 'thorn',
     el: { p: 3, t: 3, e: 1 }, cat: { flo: 4, bst: 2, min: 1, con: 0.5 },
     desc: { zh: '长满野蔷薇的山坡，风里有花粉，也有雷声。', en: 'Hillsides covered in wild roses. The wind carries pollen, and thunder.' } },
   { id: 'ardorhine', zh: '灼明', en: 'Ardorhine', area: { zh: '南部烬痕1协', en: 'Southern Jinhen, District 1' },
-    tier: 3, rec: 55, days: 10, intel: 50, lv: 11, clan: 'ember',
+    tier: 3, rec: 55, days: 30, intel: 50, lv: 11, clan: 'ember',
     el: { s: 5, t: 2 }, cat: { min: 3, bst: 2, rel: 1, cry: 0.3 },
     desc: { zh: '火山口附近的石头都是烫的。烬翼氏族的领地。', en: 'Even the stones near the crater are hot. Emberthrone territory.' } },
   { id: 'frostfang', zh: '苍牙', en: 'Frostfang', area: { zh: '北部苍阙1协', en: 'Northern Cangque, District 1' },
-    tier: 3, rec: 67, days: 12, intel: 60, lv: 13, clan: 'frost',
+    tier: 3, rec: 67, days: 36, intel: 60, lv: 13, clan: 'frost',
     el: { f: 5, d: 2 }, cat: { min: 2, bst: 2, flo: 1, rel: 1, cry: 0.3 },
     desc: { zh: '冰山像獠牙一样刺向天空。霜息氏族的领地。', en: 'Icebergs pierce the sky like fangs. Frostshroud territory.' } },
   { id: 'crimtwlit', zh: '绯暗', en: 'Crimtwlit', area: { zh: '西部嶂渊1协', en: 'Western Zhangyuan, District 1' },
-    tier: 3, rec: 78, days: 12, intel: 70, lv: 15, clan: 'necro',
+    tier: 3, rec: 78, days: 36, intel: 70, lv: 15, clan: 'necro',
     el: { c: 4, e: 3 }, cat: { rel: 3, bst: 2, flo: 1, min: 1, cry: 0.3 },
     desc: { zh: '这里的暮色永远是红的。冥骸氏族的领地。', en: 'Dusk here is always red. Necroclave territory.' } },
   { id: 'aetholith', zh: '星屿', en: 'Aetholith', area: { zh: '中部极夜2协', en: 'Central Jiye, District 2' },
-    tier: 4, rec: 90, days: 15, intel: 120, lv: 19,
+    tier: 4, rec: 90, days: 45, intel: 120, lv: 19,
     el: { s: 1, f: 1, p: 1, d: 1, c: 1, t: 1, e: 1 }, cat: { min: 2, rel: 2, bst: 1, flo: 1, cry: 0.6 },
     desc: { zh: '极夜协的星之岛，七种元素在这里交汇。', en: 'The star isle of Jiye, where all seven elements meet.' } },
   { id: 'uttermark', zh: '外缘', en: 'Uttermark', area: { zh: '北部苍阙5协', en: 'Northern Cangque, District 5' },
-    tier: 5, rec: 150, days: 20, intel: 200, lv: 24,
+    tier: 5, rec: 150, days: 60, intel: 200, lv: 24,
     el: { f: 3, d: 3, e: 2, s: 1, p: 1, c: 1, t: 1 }, cat: { min: 2, bst: 2, rel: 2, flo: 1, cry: 0.8 },
     desc: { zh: '龙巢的北方尽头，再往外就是巨海 Zylmorak。', en: 'The northern edge of Dragonest. Beyond lies the great sea, Zylmorak.' } }
 ];

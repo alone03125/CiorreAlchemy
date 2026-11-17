@@ -13,8 +13,9 @@ var TXT = {
     dragonLeave: { zh: '{0} 没有零花钱了，失望地飞走了。', en: '{0} ran out of pocket money and flew away, disappointed.' },
     workshopBuilt: { zh: '工坊落成了。你花光了全部 {0} 枚硬币，口袋里只剩一根线头。但炉火已经点燃，招牌也挂上了：只接待小型龙族。',
       en: 'The workshop is complete. You spent all {0} of your coins; only a loose thread is left in your pocket. But the furnace is lit, and the sign is up: Small dragons only.' },
-    rakuMeet: { zh: '一只渡鸦轻轻落在新工坊的招牌上，歪着头看了你一会儿。“你好呀，我是 Rakuakira，替 Ayrelia 送信的。嗯……规矩上，我得先认识一下这里的主人，可以吗？”',
-      en: 'A raven lands softly on the new workshop\'s sign and tilts her head at you. "Hello. I am Rakuakira, I carry Ayrelia\'s letters. Um... the rules say I should meet whoever runs this place first. Is that all right?"' },
+    rakuMeet: { zh: '一只渡鸦轻轻落在新工坊的招牌上，歪着头看了你一会儿。“你好呀，我是 Rakuakira，替 Ayrelia 送信的。以后每个月都会来打扰一下，请多关照。”',
+      en: 'A raven lands softly on the new workshop\'s sign and tilts her head at you. "Hello. I am Rakuakira, I carry Ayrelia\'s letters. I will be dropping by every month from now on. I hope that is all right."' },
+    market: { zh: '兜里有了翎鸾以后，集市上的摊主们开始热情地朝你招手。现在可以在湖畔页的集市里淘宝了。', en: 'Now that your pockets jingle with quills, the market stallholders wave at you eagerly. You can rummage at the market on the Lakeside tab.' },
     rhasariHint: { zh: '窗外有一只凤凰幼崽，盯着你的布丁看了很久。', en: 'A phoenix chick outside the window has been staring at your pudding for a long time.' },
     rhasariJoin: { zh: '你把一份布丁放在窗台上。凤凰幼崽探头探脑地靠近……三份布丁之后，她已经站在你的手臂上了。她叫 Rhasari。从今天起，她是工坊的“烧火鸟”。她本鸟对这个称呼表示强烈不满。',
       en: 'You leave a pudding on the windowsill. The phoenix chick creeps closer... Three puddings later, she is perched on your arm. Her name is Rhasari. From today she is the workshop\'s "stoker bird". She herself strongly objects to the title.' },
@@ -22,8 +23,8 @@ var TXT = {
     transmute: { zh: '你终于理解了元素之间的嬗变。工坊的炼金炉第一次真正地亮了起来。',
       en: 'You finally understand how the elements transmute. For the first time, the workshop\'s alchemy furnace truly lights up.' },
     monthStart: { zh: '{0}到了。', en: '{0} has begun.' },
-    quarterEnd: { zh: '季度结束了。Rakuakira 有点抱歉地把没完成的委托收了回去：“规矩就是规矩呀。下个季度，我们再一起加油。”',
-      en: 'The quarter is over. Rakuakira gathers up the unfinished commissions, a little apologetically. "Rules are rules, I am afraid. Let us do our best together next quarter."' },
+    quarterEnd: { zh: '季度结束了。Rakuakira 有点抱歉地把没完成的委托收了回去：“没关系的，下个季度，我们再一起加油。”',
+      en: 'The quarter is over. Rakuakira gathers up the unfinished commissions, a little apologetically. "It is all right. Let us do our best together next quarter."' },
     phase: { zh: '{0}。{1}', en: '{0}. {1}' },
     grow: { zh: '小龙们又长大了一点。', en: 'The dragonlings have grown a little.' },
     offline: { zh: '你离开了 {0}。小龙们一直在照看工坊。', en: 'You were away for {0}. The dragonlings kept the workshop running.' }
@@ -38,8 +39,8 @@ var TXT = {
         en: 'Rakuakira finishes the {0}, tidies up every crumb, and only then leaves a neatly written report. Intel +{1}.' },
       { zh: '“{0}很好吃呢。”Rakuakira 眯起眼睛，慢慢地跟你讲起各协的近况。情报 +{1}。',
         en: '"The {0} is lovely." Rakuakira half-closes her eyes and slowly tells you what is happening in every district. Intel +{1}.' },
-      { zh: 'Rakuakira 吃完{0}，认真地用翅膀比了个“好”。“规矩是规矩，好吃是好吃，这两件事我都会如实记下来的。”情报 +{1}。',
-        en: 'Rakuakira finishes the {0} and gives you a serious wing-up. "Rules are rules, and tasty is tasty. I will write both down honestly." Intel +{1}.' },
+      { zh: 'Rakuakira 吃完{0}，认真地用翅膀比了个“好”。“这份点心，我会好好记在心里的。”情报 +{1}。',
+        en: 'Rakuakira finishes the {0} and gives you a serious wing-up. "I will remember this treat." Intel +{1}.' },
       { zh: 'Rakuakira 想把{0}分一半给你，被你推了回去。她犹豫了一下，还是认真地吃完了。“那这份情报算我多送的。”情报 +{1}。',
         en: 'Rakuakira tries to give you half of the {0}. You push it back. She hesitates, then eats it all very properly. "Then this report is a little extra from me." Intel +{1}.' }
     ],
@@ -185,7 +186,7 @@ var TXT = {
     serve: { t: { zh: '热闹的温度', en: 'The warmth of a crowd' },
       d: { zh: '本季度招待 {0} 位顾客。“热闹是什么样子的？哼，我只是随便问问。”', en: 'Serve {0} customers this quarter. "What does liveliness feel like? Hmph. I am only asking in passing."' } },
     firewood: { t: { zh: 'Rakuakira 的窝', en: 'Rakuakira\'s Nest' },
-      d: { zh: 'Rakuakira 小声说，这一份不是 Ayrelia 的委托，是她自己的：窝有点漏风了，想要柴薪 ×{0}。“公事和私事要分清，所以得先跟你说明白呀。”', en: 'Rakuakira says quietly that this one is not from Ayrelia but from herself: her nest is a little draughty, and she would like {0} Firewood. "Work and personal things should be kept apart, so I wanted to tell you first."' } },
+      d: { zh: 'Rakuakira 小声说，这一份不是 Ayrelia 的委托，是她自己的：窝有点漏风了，想要柴薪 ×{0}。“这是我自己的小请求，不算在 Ayrelia 的委托里哦。”', en: 'Rakuakira says quietly that this one is not from Ayrelia but from herself: her nest is a little draughty, and she would like {0} Firewood. "This is just a small favour of my own. It does not count as one of Ayrelia\'s."' } },
     item: { t: { zh: '寻物：{0}', en: 'Wanted: {0}' },
       d: { zh: '带来 {0} ×{1}。“哼，我自己也找得到，只是懒得下山而已。”', en: 'Bring {0} x{1}. "Hmph. I could find it myself. I simply cannot be bothered to come down the mountain."' } },
     element: { t: { zh: '{0}的余韵', en: 'Echoes of {0}' },
@@ -226,8 +227,7 @@ var TXT = {
   },
 
   party: {
-    start: { zh: '茶会开始了！小龙们端着小杯子，郑重其事地互相碰杯。幸福度 +30%，持续 {0} 天。', en: 'The tea party begins! The dragonlings clink their tiny cups with great ceremony. Happiness +30% for {0} days.' },
-    extend: { zh: '茶会延长了。没有一只小龙表示反对。', en: 'The tea party is extended. Not a single dragonling objects.' },
+    start: { zh: '茶会开始了！长桌上摆满了饮品和点心，小龙们端着小杯子，郑重其事地互相碰杯。幸福度与客流各 +{0}%，持续 {1} 天。', en: 'The tea party begins! The long table is laden with drinks and treats, and the dragonlings clink their tiny cups with great ceremony. Happiness and customers +{0}% for {1} days.' },
     end: { zh: '茶会结束了。地上全是点心渣，有几只小龙睡在桌子底下。', en: 'The tea party is over. Crumbs everywhere, and a few dragonlings asleep under the tables.' }
   },
 
@@ -240,7 +240,9 @@ var TXT = {
   },
 
   trade: {
-    done: { zh: '与{0}的交易完成：送出 {1}，换回 {2}。', en: 'Trade with {0} complete: gave {1}, received {2}.' },
+    depart: { zh: '{1} 只小龙组成的商队背着 {2} 件货物，出发前往{0}了。', en: 'A caravan of {1} dragonlings sets off for {0}, carrying {2} goods.' },
+    back: { zh: '前往{0}的商队回来了：送出 {1}，换回 {2}。', en: 'The caravan to {0} is back: gave {1}, brought home {2}.' },
+    loss: { zh: '前往{0}的商队路上出了点状况，货物损失了大约 {1}。', en: 'The caravan to {0} ran into trouble on the road and lost about {1} of its haul.' },
     seed: { zh: '对方额外送了一包种子：{0}。现在可以在草地上种了。', en: 'They also hand over a seed packet: {0}. You can plant it in the meadow now.' },
     unlock: { zh: '你在派遣中结识了{0}的龙。现在可以和他们做生意了。', en: 'Your expeditions have made friends with {0}. You can now trade with them.' }
   },
@@ -249,6 +251,15 @@ var TXT = {
     reclaim: { zh: '你开垦了一块新地。几只小龙在新翻的土里打滚，被你赶了出去。', en: 'You clear a new plot. A few dragonlings roll in the fresh soil until you shoo them out.' },
     compost: { zh: '你把 {0} 份杂质扔进了堆肥箱。堆肥箱发出了满意的咕嘟声。肥料 +{1}。', en: 'You toss {0} impurities into the compost bin. It gurgles contentedly. Fertilizer +{1}.' },
     coldWarn: { zh: '天冷了，没有温室遮挡的作物会长得很慢。', en: 'It is cold now. Crops without a greenhouse will grow slowly.' }
+  },
+
+  market: {
+    got: { zh: '你在集市的旧货堆里翻了半天，花掉 1 金翎，换回 {0}。', en: 'You rummage through the market stalls for a while, spend 1 gold quill, and come away with {0}.' },
+    rare: { zh: '眼尖的你在一堆杂物底下摸到了 {0}！摊主看你的眼神有点后悔。', en: 'Sharp-eyed, you dig {0} out from under a pile of junk! The stallholder looks like they regret something.' }
+  },
+
+  kitchen: {
+    priDone: { zh: '优先制作的{0}已经补到目标库存，优先状态取消了。', en: 'The priority {0} has reached its target stock; priority cleared.' }
   },
 
   lux: {

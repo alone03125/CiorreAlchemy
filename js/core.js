@@ -1,7 +1,7 @@
 /* 核心：状态、效果汇总、幸福度、产出计算、时间推进、存档、日志与通用工具 */
 
 var G = {
-  version: '0.3.5',
+  version: '0.4.1',
   s: null,          // 当前存档状态
   E: {},            // 当前生效的效果汇总
   happy: 100,       // 幸福度（百分数）
@@ -65,16 +65,17 @@ function newState() {
     dragons: [], nextDragonId: 1, dragonProg: 0, starve: 0, leader: null,
     shop: { queue: 0, serveProg: 0, display: [], window: [], lost: 0, noStock: 0, snack: true, showCount: 0,
       demand: {}, sale: {}, staffSnack: {}, autoRefine: false, payIn: 'quill' },
-    kitchen: { targets: {}, task: null, manual: null },
+    kitchen: { targets: {}, task: null, manual: null, priority: null },
     farm: { plots: [], known: {}, autoFert: true, task: null, manual: null },
     luxSeen: {}, luxHave: {},
+    market: { prog: 0, last: [] },
     rhasari: { joined: false, flame: 0, mood: 50, insultCd: 0, hinted: false },
     lysari: { visits: 0, rain: 0 },
     raku: { visits: 0, last: null },
     trip: { count: 0, away: 0, place: null, memories: 0 },
-    party: { days: 0 },
+    party: { days: 0, bonus: 30, total: 0 },
     sky: { event: 0 },
-    trade: { count: {}, rel: {}, unlocked: {} },
+    trade: { count: {}, rel: {}, unlocked: {}, caravans: [] },
     disp: { unlocked: { lunavite: true }, active: [], history: [], selDest: 'lunavite', selDragon: null },
     comm: { qkey: -1, list: [], letter: 0, ups: {}, plumeBuys: 0, everGot: false, done: 0 },
     alch: { slots: [], guard: false, last: null },
@@ -82,7 +83,7 @@ function newState() {
     ach: {},
     stats: { served: 0, alch: 0, caramel: 0, dispDone: {}, clicks: 0, dispatches: 0, harvests: 0, insults: 0,
       rakuFed: 0, composted: 0, parties: 0, stars: 0, released: 0, crafted: 0, fed: 0, trades: 0, coinsEarned: 0,
-      quillEarned: 0, windowSold: 0, displaySold: 0, arrived: 0 },
+      quillEarned: 0, windowSold: 0, displaySold: 0, arrived: 0, marketDraws: 0 },
     ui: { tab: 'nest', invView: 'items', invSort: 'lv', alchSort: 'lv', alchEl: '', showDoneTech: false,
       bldCat: 'all', resCollapsed: {}, logHide: {}, right: 'log', goodsOnlyStock: false,
       census: { sort: 'cl', job: '', el: '', page: 0 }, menuView: 'goods' },
@@ -175,7 +176,7 @@ function computeEffects() {
   add(curMonth().eff, 1);
   if (s.trip.memories) add(MEMORY_EFF, s.trip.memories);
   if (s.lysari.rain > 0) add({ farmGrowth: 0.15, waterRegen: 5 }, 1);
-  if (s.party.days > 0) add({ custMult: 0.1 }, 1);
+  if (s.party.days > 0) add({ custMult: partyBonus() / 100 }, 1);
   var ld = leaderDragon();
   if (ld) add(LEADER_BONUS[ld.el], 1 + ld.gl / 50);
   G.E = E;
@@ -214,7 +215,7 @@ function computeHappiness() {
   s.dragons.forEach(function (d) { if (d.fed > 0) fed++; });
   P.fed = N ? 10 * fed / N : 0;
   P.care = jobEff('caretaker') * CARETAKER_HAPPY;
-  P.party = s.party.days > 0 ? 30 : 0;
+  P.party = partyBonus();
   /* 贵重品：每种有库存的都提高幸福度（参照原版的奢侈品） */
   P.lux = 0;
   LUXURIES.forEach(function (l) { if ((s.res[l.id] || 0) > 0) P.lux += l.happy; });
@@ -337,12 +338,15 @@ function costName(k) {
   if (ITEMS[k]) return L(ITEMS[k]);
   return k;
 }
-/* 物品价值，按铜翎计 */
+/* 物品价值，按铜翎计。v0.4.1 起随等级的 2.6 次方增长，高等级、高稀有度的产物大幅升值；
+ * 系数以“终焉布丁”（Lv 50，Rare 6）定为 99 金翎来反推 */
+var ITEM_VALUE_POW = 2.6;
+var ITEM_VALUE_K = 99 * QUILL_GOLD / (Math.pow(50, ITEM_VALUE_POW) * RARITY.valueMult[6]);
 function itemValue(id) {
   var it = ITEMS[id];
   if (!it) return 0;
   if (id === 'impurity') return 1;
-  return Math.max(1, Math.round(0.3 * Math.pow(it.lv, 1.5) * RARITY.valueMult[it.r] * (1 + eff('itemValue'))));
+  return Math.max(1, Math.round(ITEM_VALUE_K * Math.pow(it.lv, ITEM_VALUE_POW) * RARITY.valueMult[it.r] * (1 + eff('itemValue'))));
 }
 /* 收款：按设置收翎鸾或硬币。翎鸾装满时自动改收硬币。返回 {zh, en} 形式的收入说明 */
 function payout(copper) {
@@ -477,6 +481,7 @@ function onMonthStart(mA) {
   if (s.bld.workshop > 0) rakuVisit();
   if (s.rhasari.joined) rhasariMonthly();
   if (m.frozen && s.farm.plots.length) logC('farm', TXT.farm.coldWarn);
+  if (mA % 3 === 0) tradeQuarterly();
   if (mA % 3 === 0 && s.bld.workshop > 0) newQuarter();
 }
 
@@ -499,6 +504,7 @@ function tick(dt) {
   windowRestockTick();
   rhasariTick(dt);
   dispatchTick(dt);
+  caravanTick(dt);
   tripTick(dt);
   autoRefineTick(dt);
   queueTick();

@@ -220,10 +220,35 @@ function stationSpeed(st) { return 1 + 0.25 * Math.max(0, stationCount(st) - 1) 
 function foodTarget(id) { var t = G.s.kitchen.targets[id]; return t == null ? 10 : t; }
 function setTarget(id, v) { G.s.kitchen.targets[id] = clamp(Math.round(v) || 0, 0, 9999); }
 /* 是否有足够的原料开工（n 份），库存是否还放得下 */
+/* 优先制作：玩家指定一样东西为优先，它的原料不会被其他配方用掉；库存达到目标后自动取消 */
+function priorityFood() { var p = G.s.kitchen.priority; return p && FOOD_MAP[p] ? FOOD_MAP[p] : null; }
+/* 这一样是否因为要和优先物品抢原料而暂时不能做 */
+function blockedByPriority(id) {
+  var pf = priorityFood(), f = FOOD_MAP[id];
+  if (!pf || !f || pf.id === id) return false;
+  for (var k in f.inp) if (pf.inp[k] != null) return true;
+  return false;
+}
+function canSetPriority(id) { return (G.s.res[id] || 0) < foodTarget(id); }
+function setPriority(id) {
+  var s = G.s;
+  if (s.kitchen.priority === id) { s.kitchen.priority = null; return; }
+  if (!canSetPriority(id)) return;
+  s.kitchen.priority = id;
+}
+function checkPriorityDone() {
+  var s = G.s, pf = priorityFood();
+  if (!pf) { s.kitchen.priority = null; return; }
+  if ((s.res[pf.id] || 0) >= foodTarget(pf.id)) {
+    s.kitchen.priority = null;
+    logC('shop', TXT.kitchen.priDone, pf);
+  }
+}
 function canMake(id, n) {
   var s = G.s, f = FOOD_MAP[id];
   n = n || 1;
   if (!f || !foodUnlocked(f, s)) return false;
+  if (blockedByPriority(id)) return false;
   if (s.res[id] + n > capOf(id) + 1e-9) return false;
   if (f.flame && s.rhasari.flame < f.flame * n) return false;
   for (var k in f.inp) if ((s.res[k] || 0) < f.inp[k] * n - 1e-9) return false;
@@ -240,6 +265,7 @@ function startFood(id) {
 function finishFood(id) {
   var s = G.s;
   addRes(id, 1);
+  if (s.kitchen.priority === id) checkPriorityDone();
   if (id === 'caramel') s.stats.caramel++;
   s.stats.crafted++;
 }
@@ -252,6 +278,8 @@ function refundFood(id) {
 /* 厨师挑选最缺货的配方：库存低于目标库存且原料齐全 */
 function cookPick() {
   var s = G.s, best = null, bestScore = 0;
+  var pf = priorityFood();
+  if (pf && canMake(pf.id, 1) && !(pf.flame && s.rhasari.flame < pf.flame)) return pf;
   for (var i = 0; i < FOODS.length; i++) {
     var f = FOODS[i], t = foodTarget(f.id);
     if (t <= 0) continue;
@@ -275,6 +303,7 @@ function cookApply(task, w) {
 function kitchenTick(dt) {
   var s = G.s;
   if (!s.bld.workshop) return;
+  if (s.kitchen.priority) checkPriorityDone();
   var w = workForce('cook') * COOK_SPEED * dt, guard = 0;
   if (w <= 0) return;
   while (w > 1e-9 && guard++ < 30) {

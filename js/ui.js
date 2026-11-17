@@ -212,7 +212,7 @@ function costHtml(cost) {
   return out;
 }
 const EFF_KIND = {
-  housing: 'n', custRate: 'n', custMult: 'p', queueCap: 'n', windowSlots: 'n', windowChance: 'p', dispSlots: 'n', dispSpeed: 'p', dispLoot: 'p',
+  housing: 'n', custRate: 'n', custMult: 'p', queueCap: 'n', windowSlots: 'n', windowChance: 'p', marketLux: 'n', dispSlots: 'n', dispSpeed: 'p', dispLoot: 'p',
   dispTypes: 'n', itemValue: 'p', alchFloor: 'pa', alchFail: 'pa', flameMax: 'n', flameRegen: 'p',
   displaySlots: 'n', displayChance: 'p', trainXp: 'r', growth: 'p', buildCost: 'p', rakuIntel: 'p',
   commReward: 'p', commSlots: 'n', noInjury: 'x', showMult: 'p', upkeepRelief: 'pa', crowdRelief: 'pa',
@@ -304,7 +304,7 @@ function tipItem(id) {
   let html = '<div class="tt-title" style="' + rarityStyle(it.r) + '">' + esc(L(it)) + '</div>';
   html += ttRow(T('alch_level'), 'Lv ' + it.lv) + ttRow(T('rarity'), 'Rare ' + it.r) +
     ttRow(T('element'), L(ELEMENTS[it.el])) + ttRow(T('category'), L(CATS[it.cat])) +
-    ttRow(T('value'), fmtQuill(itemValue(id))) + ttRow(T('alch_points'), String(it.lv * it.lv)) +
+    ttRow(T('value'), fmtQuill(itemValue(id))) + ttRow(T('alch_points'), fmt(itemPoints(id), 1)) +
     ttRow(T('owned'), String(G.s.inv[id] || 0));
   html += '<div class="tt-sep"></div><div class="tt-sub">' + esc(T('uses')) + '</div>' + itemUses(id).map(x => '<div class="tt-li">' + esc(x) + '</div>').join('');
   const src = itemSources(id);
@@ -617,6 +617,21 @@ function openModal(title, text, readonly, onOk, single) {
   ta.focus();
   if (readonly || single) ta.select();
 }
+/* 挑选面板：标题加一个实时刷新的区域，用于贸易商队与茶会的挑选。按 Esc 或“关闭”退出 */
+function openPanel(title, keyFn, buildFn) {
+  const m = document.getElementById('modal');
+  m.innerHTML = '';
+  const reg = new Region(keyFn, buildFn, 'div', 'panel-body');
+  const close = () => { m.classList.add('hidden'); m.innerHTML = ''; UI.panel = null; document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  m.appendChild(h('div', { class: 'modal-box panel' },
+    h('div', { class: 'panel-head' }, h('span', { class: 'modal-t', text: title }), h('a', { class: 'lb', text: T('close'), onclick: close })), reg.el));
+  m.classList.remove('hidden');
+  UI.panel = { reg: reg, close: close };
+  reg.refresh();
+  return UI.panel;
+}
 function showExport() { openModal(T('export_t'), exportSave(), true); }
 function showImport() {
   openModal(T('import_t'), '', false, txt => {
@@ -649,5 +664,6 @@ UI.init = function () {
 };
 UI.refreshAll = function () {
   UI.roots.forEach(r => r.refresh());
+  if (UI.panel) UI.panel.reg.refresh();
   drawTip();
 };

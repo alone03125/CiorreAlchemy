@@ -189,9 +189,23 @@ var FOODS = [
   { id: 'hoard_cake', kind: 'dessert', st: 'oven', inp: { flour: 4, eggs: 5, cocoa_sauce: 1, cream: 3, honey: 2 }, price: 80, tech: 'grand_patisserie', zh: '宝藏堆蛋糕', en: 'Hoard Cake',
     desc: { zh: '做成宝藏堆形状的巨型蛋糕。龙族顾客看到会本能地趴上去守护，请提前准备好刀叉和说服技巧。', en: 'A giant cake shaped like a hoard. Dragon customers instinctively lie on it to guard it. Bring cutlery and persuasion.' } }
 ];
-/* 制作所需的工作量：原料种类越多、售价越高，越费工夫 */
+/* 加工层级：原料全是作物或畜产品的为 0 级；用到半成品或商品的，比其中最高的那一级再高一级 */
+var _tierMemo = {};
+function foodTier(f) {
+  if (_tierMemo[f.id] != null) return _tierMemo[f.id];
+  var t = 0;
+  for (var k in f.inp) {
+    var g = FOODS.find(function (x) { return x.id === k; });
+    if (g) t = Math.max(t, foodTier(g) + 1);
+  }
+  _tierMemo[f.id] = t;
+  return t;
+}
+/* 制作所需的工作量：原料种类越多、售价越高越费工夫；每高一级加工层级，工作量再加 1.5 倍 */
+var TIER_WORK = 1.5;
 FOODS.forEach(function (f) {
-  if (f.work == null) f.work = Math.round((0.5 + 0.2 * Object.keys(f.inp).length + f.price * 0.02) * 100) / 100;
+  f.tier = foodTier(f);
+  if (f.work == null) f.work = Math.round((0.5 + 0.2 * Object.keys(f.inp).length + f.price * 0.02) * (1 + TIER_WORK * f.tier) * 100) / 100;
 });
 
 var CROP_MAP = {}, FOOD_MAP = {}, ING_MAP = {};

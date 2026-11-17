@@ -7,6 +7,10 @@ function checkUnlocks() {
     s.flags.firewood = true;
     logC('story', TXT.story.firewood);
   }
+  if (!s.flags.market && marketUnlocked()) {
+    s.flags.market = true;
+    logC('story', TXT.story.market);
+  }
   if (foodUnlocked(FOOD_MAP.pudding, s) && !s.rhasari.joined && !s.rhasari.hinted) {
     s.rhasari.hinted = true;
     logC('story', TXT.story.rhasariHint);
@@ -69,6 +73,79 @@ function autoRefineTick(dt) {
   var coins = Math.min(s.res.coins * 0.05 * dt, room * REFINE_RATE);
   addRes('coins', -coins);
   addRes('firewood', coins / REFINE_RATE);
+}
+
+/* ========== 集市淘宝 ==========
+ * 工坊有了稳定的翎鸾收入（累计收入达到 1 金翎）后解锁。按住按钮，每翻找一次花 1 金翎，
+ * 按权重随机得到一份基础材料，或一件 43 级以下的炼金物品，相当于抽卡 */
+var MARKET_COST = QUILL_GOLD, MARKET_WORK = 1.2;   // 每翻找一次大约要按住 1.2 秒
+var MARKET_POOL = [
+  { res: 'coins', min: 1500, max: 4000, w: 18 },
+  { res: 'firewood', min: 20, max: 60, w: 16 },
+  { res: 'ore', min: 60, max: 180, w: 16 },
+  { res: 'lore', min: 150, max: 500, w: 14 },
+  { res: 'fertilizer', min: 10, max: 30, w: 8 },
+  { res: 'intel', min: 3, max: 8, w: 6 },
+  { item: true, w: 28 },
+  { lux: true, w: 0 }   // 研究“淘宝门道”后才会出现，权重来自效果 marketLux
+];
+var MARKET_MAX_LV = 42;
+function marketUnlocked() {
+  var s = G.s;
+  return s.bld.workshop > 0 && (!!s.flags.market || (s.stats.quillEarned || 0) >= QUILL_GOLD);
+}
+function canMarket() { return marketUnlocked() && !tripAway() && G.s.res.quill >= MARKET_COST - 1e-9; }
+/* 物品：等级偏低（平均十几级），同一等级里按稀有度权重抽取；特殊物品不会出现 */
+function marketItem() {
+  var lv = 1 + Math.floor(MARKET_MAX_LV * Math.pow(Math.random(), 1.8));
+  for (var d = 0; d < MARKET_MAX_LV; d++) {
+    var pool = ITEM_LIST.filter(function (it) { return !it.x && it.lv <= MARKET_MAX_LV && (it.lv === lv - d || it.lv === lv + d); });
+    if (pool.length) return wpick(pool.map(function (it) { return [it, RARITY.weight[it.r]]; }));
+  }
+  return null;
+}
+function marketDraw() {
+  var s = G.s;
+  if (!canMarket()) return null;
+  addRes('quill', -MARKET_COST);
+  s.stats.marketDraws = (s.stats.marketDraws || 0) + 1;
+  /* 已经装满的资源不会抽到，免得白花钱 */
+  var e = wpick(MARKET_POOL.filter(function (x) { return !x.res || (RES_MAP[x.res].unlocked(s) && s.res[x.res] < capOf(x.res) - x.min); })
+    .map(function (x) { return [x, x.lux ? eff('marketLux') : x.w]; }));
+  var got, rare = false;
+  if (e.lux) {
+    /* 贵重品：按掉落权重挑一种，越稀有的给得越少 */
+    var l = wpick(LUXURIES.map(function (x) { return [x, x.w]; }));
+    var ln = Math.max(1, Math.round(randInt(10, 30) / l.tier));
+    addLux(l.id, ln);
+    got = resAmtPair(l.id, ln);
+    rare = l.tier >= 3;
+    s.market.last.unshift({ res: l.id, n: ln });
+  } else if (e.item) {
+    var it = marketItem();
+    addItem(it.id, 1);
+    got = itemPair(it.id);
+    rare = it.r >= 4 || it.lv >= 30;
+    s.market.last.unshift({ item: it.id });
+  } else {
+    var n = randInt(e.min, e.max), added = addRes(e.res, n);
+    got = resAmtPair(e.res, Math.floor(added));
+    s.market.last.unshift({ res: e.res, n: Math.floor(added) });
+  }
+  if (s.market.last.length > 6) s.market.last.length = 6;
+  logC('shop', rare ? TXT.market.rare : TXT.market.got, got);
+  return got;
+}
+/* 按住“集市淘宝”时调用 */
+function marketWork(dt) {
+  var s = G.s;
+  if (!canMarket()) return;
+  s.market.prog += dt / MARKET_WORK;
+  var guard = 0;
+  while (s.market.prog >= 1 && guard++ < 5) {
+    s.market.prog -= 1;
+    if (!marketDraw()) { s.market.prog = 0; break; }
+  }
 }
 
 /* ========== 建筑与研究 ========== */
@@ -527,9 +604,10 @@ function rakuVisit() {
 }
 
 /* ========== Ciorre 的旅行 ========== */
-function tripCost() { return Math.round(4000 * Math.pow(1.7, G.s.trip.count)); }
+/* v0.4 起旅行贵了很多：至少要攒够 10000 × 1.8 的 n 次方硬币，外加 2 金翎 × 1.8 的 n 次方路费 */
+function tripCost() { return Math.round(10000 * Math.pow(1.8, G.s.trip.count)); }
 /* 旅行还要带上翎鸾当路费 */
-function tripQuill() { return Math.round(72 * Math.pow(1.6, G.s.trip.count)); }
+function tripQuill() { return Math.round(288 * Math.pow(1.8, G.s.trip.count)); }
 function canTrip() {
   var s = G.s;
   return s.tech.wanderlust && !tripAway() && s.res.coins >= tripCost() && s.res.quill >= tripQuill();
@@ -701,7 +779,7 @@ function rollLux(dest, cl) {
     });
     var l = wpick(pairs);
     pool = pool.filter(function (x) { return x !== l; });
-    out[l.id] = Math.max(1, Math.round((2 + 2 * dest.tier) * (1 + cl / 80) * rand(0.7, 1.3)));
+    out[l.id] = Math.max(1, Math.round(3 * (2 + 2 * dest.tier) * (1 + cl / 80) * rand(0.7, 1.3)));
   }
   return out;
 }
@@ -742,12 +820,16 @@ function finishDispatch(a) {
 }
 
 /* ========== 炼金 ========== */
+/* v0.4.1：炼金点数改为立方。每件材料提供“等级的立方 × 稀有度倍率”点，
+ * 产物的最高等级为总点数的立方根，所以 50 级产物需要 125000 点，十几级的材料再多也凑不出来 */
+function itemPoints(id) { var it = ITEMS[id]; return Math.pow(it.lv, 3) * RARITY.points[it.r]; }
 function alchPoints(ids) {
-  return ids.reduce(function (a, id) { var it = ITEMS[id]; return a + it.lv * it.lv; }, 0);
+  return ids.reduce(function (a, id) { return a + itemPoints(id); }, 0);
 }
+function levelPoints(lv) { return Math.pow(lv, 3); }
 function alchRange(ids) {
   var p = alchPoints(ids);
-  var max = clamp(Math.floor(Math.sqrt(p)), 1, 50);
+  var max = clamp(Math.floor(Math.cbrt(p) + 1e-9), 1, 50);
   var fl = Math.min(0.6, eff('alchFloor'));
   var min = Math.max(1, Math.ceil(max * fl));
   return { p: p, max: max, min: Math.min(min, max) };
@@ -790,9 +872,10 @@ function slotAdd(id) {
   s.alch.slots.push(id);
 }
 function slotRemove(i) { G.s.alch.slots.splice(i, 1); }
-function transmute() {
+/* 炼金。defer 为真时先不写日志，返回的结果里带 flush()，由界面在揭晓动画结束后调用 */
+function transmute(defer) {
   var s = G.s;
-  if (!canTransmute()) return;
+  if (!canTransmute()) return null;
   var ids = s.alch.slots.slice();
   var guard = s.alch.guard && s.rhasari.joined;
   spendCost(alchCost(ids));
@@ -814,16 +897,20 @@ function transmute() {
   addItem(out, 1);
   s.stats.alch++;
   s.alch.last = { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv };
-  if (guard) logC('alch', TXT.rhasari.guard);
-  if (recipe) logC('alch', TXT.alch.recipe, itemPair(out));
-  else if (failed) logC('alch', TXT.alch.fail, itemPair(intended));
-  else logC('alch', TXT.alch.ok, itemPair(out));
+  var flush = function () {
+    if (guard) logC('alch', TXT.rhasari.guard);
+    if (recipe) logC('alch', TXT.alch.recipe, itemPair(out));
+    else if (failed) logC('alch', TXT.alch.fail, itemPair(intended));
+    else logC('alch', TXT.alch.ok, itemPair(out));
+  };
+  if (!defer) flush();
   var keep = [], c = {};
   s.alch.slots.forEach(function (id) {
     c[id] = (c[id] || 0) + 1;
     if ((s.inv[id] || 0) >= c[id]) keep.push(id);
   });
   s.alch.slots = keep;
+  return { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv, flush: defer ? flush : function () {} };
 }
 
 /* ========== 委托（Ayrelia） ========== */

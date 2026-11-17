@@ -32,65 +32,78 @@ LUXURIES.forEach(function (l) {
     unlocked: function (s) { return !!(s.luxSeen && s.luxSeen[l.id]); } });
 });
 
-/* 贸易伙伴。wants：交付的商品种类与数量；gives：换回的东西。
- * res 为资源，item 为物品，crystal 为元素结晶，seed 为作物种子（首次贸易必定获得）。
- * best 为最佳月份（收获 +25%），closed 为不营业的月份。unlockDest 为解锁该伙伴所需的派遣地点之一。 */
+/* 贸易伙伴。v0.4 起每次贸易都要组织一支商队：
+ * wants.kind 为允许带去的商品种类（drink 饮品，dessert 甜品，any 任意商品）；cost 为路费；days 为往返天数；
+ * el 为对方偏爱的小龙属性（属性相符的小龙能多带一些货）。
+ * gives 为基准换回的东西：res 资源，item 物品，crystal 元素结晶，seed 作物种子（首次贸易必定获得）；
+ * 实际数量还要乘以“货物倍率 × 商队倍率 × 关系与月份倍率”，见 extras.js。
+ * best 为最佳月份（收获 +25%），closed 为不营业的月份（不能出发）。unlockDest 为解锁该伙伴所需的派遣地点之一。 */
 var TRADE_PARTNERS = [
   { id: 'owls', zh: '猫头鹰王国', en: 'Vohrkthal', color: '#8a6d3b',
-    wants: { kind: 'dessert', n: 8 }, cost: { quill: 24 },
+    wants: { kind: 'dessert' }, cost: { quill: 576 }, days: 80, el: ['e', 'p'],
     gives: [
       { res: 'lore', min: 300, max: 700 },
       { res: 'honey', min: 5, max: 15, ch: 0.6 },
       { item: 'owl_feather', min: 1, max: 2, ch: 0.5 },
-      { res: 'shiny_coin', min: 4, max: 10, ch: 0.5 },
-      { res: 'music_box', min: 1, max: 3, ch: 0.12 },
+      { res: 'shiny_coin', min: 28, max: 70, ch: 0.7 },
+      { res: 'candy_wrappers', min: 35, max: 105, ch: 0.5 },
+      { res: 'music_box', min: 7, max: 21, ch: 0.35 },
+      { res: 'pocket_watch', min: 3, max: 10, ch: 0.15 },
       { seed: 'vanilla' }
     ],
     best: [4], closed: [],
     desc: { zh: '东边的猫头鹰们爱读书、爱讲价，更爱甜品。用学识和香草种子换你的点心。', en: 'The owls to the east love books, haggling and, above all, desserts. They pay in lore and vanilla seeds.' } },
   { id: 'ember', zh: '烬翼氏族', en: 'Emberthrone Ascendancy', color: '#c8501e', unlockDest: ['noctflame', 'ardorhine'],
-    wants: { kind: 'drink', n: 10 }, cost: { quill: 24 },
+    wants: { kind: 'drink' }, cost: { quill: 576 }, days: 60, el: ['s'],
     gives: [
       { crystal: 's', min: 1, max: 3 },
       { res: 'ore', min: 150, max: 400 },
       { item: 'molten_scale', min: 1, max: 1, ch: 0.25 },
-      { res: 'lava_tear', min: 5, max: 15, ch: 0.5 },
+      { res: 'lava_tear', min: 35, max: 105, ch: 0.8 },
+      { res: 'shiny_coin', min: 28, max: 70, ch: 0.5 },
+      { res: 'marbles', min: 21, max: 63, ch: 0.3 },
       { seed: 'coconut' }
     ],
     best: [6], closed: [11],
     desc: { zh: '南方火山脚下的氏族，住得太热，所以什么饮料都要。永霜月冬眠不营业。', en: 'A clan at the foot of southern volcanoes. It is so hot there they will take any drink. Closed in Brucemar for hibernation.' } },
   { id: 'frost', zh: '霜息氏族', en: 'Frostshroud Covenent', color: '#3a8fc4', unlockDest: ['abysweald', 'frostfang'],
-    wants: { kind: 'drink', n: 10 }, cost: { quill: 24 },
+    wants: { kind: 'drink' }, cost: { quill: 576 }, days: 60, el: ['f', 'd'],
     gives: [
       { crystal: 'f', min: 1, max: 3 },
       { res: 'firewood', min: 100, max: 250 },
       { item: 'frost_lichen', min: 1, max: 3, ch: 0.4 },
-      { res: 'snow_globe', min: 5, max: 15, ch: 0.5 },
+      { res: 'snow_globe', min: 35, max: 105, ch: 0.8 },
+      { res: 'fluorite', min: 21, max: 63, ch: 0.4 },
+      { res: 'pocket_watch', min: 3, max: 10, ch: 0.15 },
       { seed: 'mint' }
     ],
     best: [11], closed: [6],
     desc: { zh: '北方永霜冻土的氏族，最想要热饮。龙焰月太热，他们不下山。', en: 'The clan of the northern Everfrost, desperate for hot drinks. In Ignust it is too hot for them to come down.' } },
   { id: 'thorn', zh: '棘语氏族', en: 'Thornspire Conklave', color: '#3f8f3f', unlockDest: ['lunavite', 'monifern'],
-    wants: { kind: 'dessert', n: 8 }, cost: { quill: 24 },
+    wants: { kind: 'dessert' }, cost: { quill: 576 }, days: 50, el: ['p', 't'],
     gives: [
       { res: 'tea', min: 5, max: 15, ch: 0.7 },
       { res: 'strawberry', min: 5, max: 15, ch: 0.5 },
       { crystal: 'p', min: 1, max: 2, ch: 0.6 },
       { crystal: 't', min: 1, max: 2, ch: 0.6 },
-      { res: 'marbles', min: 5, max: 15, ch: 0.5 },
-      { res: 'candy_wrappers', min: 5, max: 15, ch: 0.4 },
+      { res: 'marbles', min: 35, max: 105, ch: 0.7 },
+      { res: 'candy_wrappers', min: 35, max: 105, ch: 0.6 },
+      { res: 'music_box', min: 7, max: 21, ch: 0.25 },
       { seed: 'cocoa' }
     ],
     best: [9], closed: [],
     desc: { zh: '东南林地的氏族，说话带刺，心很软。用茶叶、草莓和可可种子换甜品。', en: 'The south-eastern woodland clan. Thorny words, soft hearts. They trade tea, strawberries and cocoa seeds for desserts.' } },
   { id: 'necro', zh: '冥骸氏族', en: 'Necroclave Syndicate', color: '#7a4a9c', unlockDest: ['vacuumyth', 'crimtwlit'],
-    wants: { kind: 'any', n: 12 }, cost: { quill: 24 },
+    wants: { kind: 'any' }, cost: { quill: 576 }, days: 70, el: ['c', 'e'],
     gives: [
       { crystal: 'c', min: 1, max: 2 },
       { crystal: 'e', min: 1, max: 2 },
       { res: 'intel', min: 3, max: 8 },
       { item: 'ancient_coin', min: 1, max: 1, ch: 0.3 },
-      { res: 'fluorite', min: 5, max: 15, ch: 0.5 },
+      { res: 'fluorite', min: 35, max: 105, ch: 0.8 },
+      { res: 'lava_tear', min: 21, max: 63, ch: 0.3 },
+      { res: 'pocket_watch', min: 7, max: 21, ch: 0.3 },
+      { res: 'tiny_crown', min: 1, max: 4, ch: 0.08 },
       { seed: 'blueberry' }
     ],
     best: [10], closed: [7],
@@ -112,7 +125,7 @@ var ACHIEVEMENTS = [
   { id: 'menu25', zh: '翻不完的菜单', en: 'Endless Menu', desc: { zh: '解锁 25 种商品。', en: 'Unlock 25 goods.' }, check: function (s) { return GOODS_LIST.filter(function (f) { return foodUnlocked(f, s); }).length >= 25; } },
   { id: 'stoker', zh: '烧火鸟', en: 'Stoker Bird', desc: { zh: '叫 Rhasari“烧火鸟”10 次。她都记着呢。', en: 'Call Rhasari a stoker bird 10 times. She remembers every one.' }, check: function (s) { return s.stats.insults >= 10; } },
   { id: 'sister', zh: '姐姐来了', en: 'Big Sister Is Here', desc: { zh: 'Lysari 第一次来访。', en: 'Lysari visits for the first time.' }, check: function (s) { return s.lysari.visits >= 1; } },
-  { id: 'raku12', zh: '按规定签收', en: 'Signed for, as Required', desc: { zh: '让 Rakuakira 在窗台吃到 12 次零食。', en: 'Let Rakuakira have a windowsill snack 12 times.' }, check: function (s) { return s.stats.rakuFed >= 12; } },
+  { id: 'raku12', zh: '窗台的老朋友', en: 'An Old Friend on the Windowsill', desc: { zh: '让 Rakuakira 在窗台吃到 12 次零食。', en: 'Let Rakuakira have a windowsill snack 12 times.' }, check: function (s) { return s.stats.rakuFed >= 12; } },
   { id: 'harvest100', zh: '丰收', en: 'Bountiful', desc: { zh: '收获 100 次作物。', en: 'Harvest crops 100 times.' }, check: function (s) { return s.stats.harvests >= 100; } },
   { id: 'compost', zh: '杂质也是资源', en: 'Waste Not', desc: { zh: '把一份杂质扔进堆肥箱。', en: 'Compost an impurity.' }, check: function (s) { return s.stats.composted >= 1; } },
   { id: 'first_alch', zh: '第一缕炉烟', en: 'First Wisp of Smoke', desc: { zh: '完成第一次自由炼金。', en: 'Complete your first free transmutation.' }, check: function (s) { return s.stats.alch >= 1; } },
