@@ -1,5 +1,20 @@
 /* 启动、主循环、自动存档 */
 
+/* ===== 离线运行（挂机）开关 =====
+ * false（默认）：关闭挂机。关掉网页后游戏暂停，下次打开不会补算离线收益。
+ * true        ：开启挂机。关掉网页后按真实时间补算，单次上限 OFFLINE_CAP 秒。
+ * 注意：标签页被浏览器节流/后台冻结时的补算保护不受此开关影响，始终生效。
+ * 控制台可临时切换：setOfflineRun(true / false)
+ */
+var OFFLINE_RUN = false;
+var OFFLINE_CAP = 8 * 3600; /* 离线/节流补算上限（秒） */
+
+function setOfflineRun(on) {
+  OFFLINE_RUN = !!on;
+  return OFFLINE_RUN;
+}
+if (typeof window !== 'undefined') window.setOfflineRun = setOfflineRun;
+
 /* 开发自检：检查数据表之间的引用是否完整 */
 function devCheck() {
   var problems = [];
@@ -71,11 +86,15 @@ function durationPair(sec) {
     }
     else if (!G.s.paused) {
       var away = (Date.now() - (G.s.lastSave || Date.now())) / 1000;
-      if (away > 30) {
+      /* 仅在挂机开关打开时才补算离线收益；关闭时游戏从上次存档处原样继续 */
+      if (OFFLINE_RUN && away > 30) {
         G.silent = true;
-        simulate(Math.min(away, 8 * 3600));
+        simulate(Math.min(away, OFFLINE_CAP));
         G.silent = false;
         logC('sys', TXT.story.offline, durationPair(away));
+      } else if (!OFFLINE_RUN && away > 30) {
+        /* 关闭挂机：不补算时间，但仍把时间戳推进，避免存档里残留旧时间 */
+        G.s.lastSave = Date.now();
       }
     }
     UI.init();
@@ -87,8 +106,9 @@ function durationPair(sec) {
       last = now;
       if (G.s.paused) { computeEffects(); computeRates(); UI.refreshAll(); return; }
       if (dt > 30) {
+        /* 标签页被浏览器节流/后台冻结时的运行保护：始终保留，与挂机开关无关 */
         G.silent = true;
-        simulate(Math.min(dt, 8 * 3600));
+        simulate(Math.min(dt, OFFLINE_CAP));
         G.silent = false;
       } else {
         holdTick(dt);
