@@ -580,6 +580,7 @@ function buildExpedition(el) {
 function buildAlchemy(el) {
   const s = G.s;
   el.appendChild(note(T('al_rules')));
+  if (typeof buildHepta !== 'function') { el.appendChild(note(T('stale_files'), 'notice')); return; }
   el.appendChild(buildHepta());
   el.appendChild(liveText('div', () => {
     const g = s.alch.guard && s.rhasari.joined, v = phaseMod();

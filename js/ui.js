@@ -625,7 +625,7 @@ function openPanel(title, keyFn, buildFn) {
   const close = () => { m.classList.add('hidden'); m.innerHTML = ''; UI.panel = null; document.removeEventListener('keydown', onKey); };
   const onKey = e => { if (e.key === 'Escape') close(); };
   document.addEventListener('keydown', onKey);
-  m.appendChild(h('div', { class: 'modal-box panel' },
+  m.appendChild(h('div', { class: 'modal-box panel', style: 'max-height:88vh;overflow-y:auto;width:min(780px,94vw)' },
     h('div', { class: 'panel-head' }, h('span', { class: 'modal-t', text: title }), h('a', { class: 'lb', text: T('close'), onclick: close })), reg.el));
   m.classList.remove('hidden');
   UI.panel = { reg: reg, close: close };

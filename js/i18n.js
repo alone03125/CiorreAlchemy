@@ -285,7 +285,8 @@ var I18N = {
     ag_full: '已经达到 50 级上限',
     ag_sub: '产物等级 {0} 到 {1}，可能的稀有度 R{2} 到 R{3}',
     ag_empty: '每件材料提供“等级的立方 × 稀有度倍率”点，总点数的立方根就是产物的最高等级。',
-    e_marketLux: '集市淘宝可能淘到贵重品，权重 {0}'
+    e_marketLux: '集市淘宝可能淘到贵重品，权重 {0}',
+    stale_files: '页面文件不是最新的：请把 index.html 和 css 文件夹也一起更新，炼金界面才能显示。'
   },
 
   en: {
@@ -571,7 +572,8 @@ var I18N = {
     ag_full: 'At the level 50 cap',
     ag_sub: 'Product level {0} to {1}, possible rarity R{2} to R{3}',
     ag_empty: 'Each material gives (level cubed x rarity factor) points; the cube root of the total is the product\'s maximum level.',
-    e_marketLux: 'Market finds can include treasures, weight {0}'
+    e_marketLux: 'Market finds can include treasures, weight {0}',
+    stale_files: 'The page files are out of date: please update index.html and the css folder too, so the alchemy screen can show.'
   }
 };
 

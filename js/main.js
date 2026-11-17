@@ -61,6 +61,18 @@ function devCheck() {
   return problems;
 }
 
+/* 检查 index.html 是否与脚本同一版本：只更新了 js 文件夹、没更新 index.html 和 css 时会在日志里提醒 */
+function checkPageFiles() {
+  if (typeof document === 'undefined' || !document.scripts) return;
+  var stale = false;
+  Array.prototype.forEach.call(document.scripts, function (sc) {
+    var m = /[?&]v=([\d.]+)/.exec(sc.src || '');
+    if (m && m[1] !== G.version) stale = true;
+  });
+  if (typeof buildHepta !== 'function') stale = true;
+  if (stale) logC('sys', { zh: '检测到页面文件不是最新的：请把 index.html 和 css 文件夹也一起更新，否则部分界面可能无法显示。', en: 'Some page files are out of date: please update index.html and the css folder along with js, or parts of the interface may not show.' });
+}
+
 function durationPair(sec) {
   var keep = LANG, out = {};
   ['zh', 'en'].forEach(function (lg) { LANG = lg; out[lg] = fmtTime(sec); });
@@ -97,6 +109,7 @@ function durationPair(sec) {
         G.s.lastSave = Date.now();
       }
     }
+    checkPageFiles();
     UI.init();
     UI.refreshAll();
 
