@@ -1,0 +1,540 @@
+/* 中英双语：界面文字表与格式化工具 */
+var LANG = 'zh';
+
+var I18N = {
+  zh: {
+    game_title: 'Ciorre 的炼金工坊',
+    lnk_lang: 'English', lnk_dark: '夜间', lnk_light: '日间', lnk_pause: '暂停', lnk_resume: '继续', lnk_save: '保存', lnk_export: '导出', lnk_import: '导入', lnk_reset: '重置',
+    confirm_reset: '确定要重置吗？所有进度都会消失。',
+    tab_nest: '龙巢', tab_dragons: '小龙', tab_research: '研究', tab_workshop: '工坊', tab_meadow: '草地',
+    tab_expedition: '派遣', tab_alchemy: '炼金', tab_trade: '贸易', tab_inventory: '仓库', tab_commissions: '委托', tab_records: '记录',
+    per_sec: '/秒', cap_short: '（超过上限）', list_sep: '，', colon: '：', nothing: '无', or: '或', all: '全部', day_unit: '天',
+
+    e_prod: '{0} {1}', e_cap: '{0}上限 {1}', capgrp_goods: '每种商品', capgrp_processed: '每种半成品', capgrp_ingredient: '每种食材',
+    e_mult: '{0}产量 {1}', e_job: '{0}效率 {1}', e_price: '{0}售价 {1}', e_priceSt: '{0}类商品售价 {1}',
+    e_dispEl: '派遣中的{0}属性物品 {1}', e_dispCat: '派遣中的{0}类物品 {1}',
+    e_housing: '小龙住所 {0}', e_custRate: '基础客流 {0} 位/天', e_custMult: '客流 {0}', e_queueCap: '等候顾客上限 {0}',
+    e_dispSlots: '派遣名额 {0}', e_dispSpeed: '派遣速度 {0}', e_dispLoot: '派遣带回的物品数量 {0}', e_dispTypes: '派遣带回的物品种类 {0}',
+    e_itemValue: '物品价值 {0}', e_alchFloor: '炼金最低等级提高，相当于最高等级的 {0}', e_alchFail: '炼金失败率 -{0}',
+    e_flameMax: 'Rhasari 火力上限 {0}', e_flameRegen: 'Rhasari 火力恢复 {0}', e_displaySlots: '展柜 {0}',
+    e_displayChance: '展柜成交率 {0}', e_trainXp: '在家小龙的战斗经验 {0}/秒', e_growth: '小龙成长速度 {0}',
+    e_buildCost: '建筑价格 {0}', e_rakuIntel: 'Rakuakira 带来的情报 {0}', e_commReward: '委托奖励 {0}',
+    e_commSlots: '每季度委托 {0}', e_noInjury: '派遣不再受伤', e_showMult: '现场焦糖秀收入 {0}',
+    e_upkeepRelief: '小龙零花钱 -{0}', e_crowdRelief: '拥挤带来的不满 -{0}', e_happiness: '幸福度 {0}%', e_priceAll: '所有商品售价 {0}',
+    e_skillXP: '熟练度增长 {0}/秒', e_farmGrowth: '作物生长速度 {0}', e_cropYield: '作物产量 {0}', e_waterRegen: '地块每天补水 {0}',
+    e_greenhouse: '受温室保护的地块 {0}', e_tradeRatio: '贸易收获 {0}', e_starChance: '每天出现流星的概率 {0}', e_kitchenSpeed: '后厨速度 {0}',
+
+    built_done: '已经建成。', all_coins: '全部硬币（至少）', per_building: '每座：', built: '（已建成）',
+    station_note: '这个工位可以制作：{0}', unlocks_bld: '解锁建筑：{0}',
+    alch_level: '炼金等级', rarity: '稀有度', element: '元素', category: '类别', value: '价值', alch_points: '炼金点数', owned: '持有',
+    uses: '用途', sources: '获取途径',
+    use_alch: '自由炼金的材料', use_recipe: '固定配方的材料：{0}', use_build: '建造或研究的花费', use_compost: '可以扔进堆肥箱变成肥料', use_sell: '可以卖给猫头鹰商人，或放进展柜',
+    src_disp: '派遣到 {0} 可能带回', src_crystal: '派遣时额外掉落，Lysari 也会送', src_trade: '与{0}贸易', src_recipe: '固定配方', src_alch: '自由炼金的产物',
+    src_fail: '炼金失败时产生', src_rhasari: 'Rhasari 心情很好时掉落', src_lysari: 'Lysari 来访时偶尔掉落', src_ayrelia: '用 Ayrelia 的青睐兑换', src_star: '观测流星时可能落下',
+    stock: '库存', station: '工位', price: '售价', demand: '需求', ingredients: '原料', flame: '火力', mood: '心情',
+    src_crop: '种植{0}获得，约 {1} 天成熟。', src_bld: '由{0}产出。', used_in: '用于：{0}',
+    rate_bonus: '加成 {0}', rate_upkeep: '小龙的零花钱', rate_snack: '员工零食', rate_total: '合计', rate_flow: '实际变化（含营业与后厨）',
+    to_full: '距离满仓', to_empty: '距离耗尽',
+    resnote_coins: '小龙的零花钱是最大的开销。派遣与委托带回的硬币即时到账，不计入每秒产出。工坊的货款如果选择收硬币，每 1 铜翎只换 20 硬币。',
+    resnote_firewood: '可以用硬币向路过的樵夫换取，100 硬币换 1 柴薪。',
+    resnote_lore: '用于研究。书角、学堂、石碑与观星台提高上限。',
+    resnote_fertilizer: '堆肥箱产出，也可以把炼金杂质扔进去。施肥时每点肥力消耗 0.2。',
+    resnote_renown: '声望让客流 {0}。每招待一位顾客 +0.02，现场焦糖秀 +0.3，委托也会给予声望。声望每天会少量回落。',
+    resnote_intel: '来自顾客的闲聊、Rakuakira、派遣、信使与观星。用于研究和解锁派遣地点。',
+    resnote_favor: '完成 Ayrelia 的委托获得，可以在委托页兑换升级。',
+
+    happiness: '幸福度', happy_desc: '幸福度直接乘在所有小龙的工作效率上，最低 25%。超过 5 只小龙后，每多一只扣 2%。',
+    happy_base: '基础', happy_crowd: '拥挤', happy_bld: '建筑与月份', happy_snack: '员工零食', happy_fed: '饱足的小龙', happy_care: '保育员', happy_party: '茶会',
+    happy_factor: '当前工作效率倍率：{0}',
+    dragonlings: '小龙', idle_n: '空闲 {0}', party_on: '茶会中', only_stock: '只显示有库存的', crystals: '元素结晶',
+    dragonlings_tip: '每只小龙每秒需要 {0} 硬币零花钱，没有硬币时小龙会陆续离开。幼龙窝与龙穴提供住所，有空位、手上有硬币时，新的小龙会自己飞来。',
+    cal_era: '火翼双弦历', cal_date: '第 {0} 年  {1}  第 {2} 日', cal_quarter: '第 {0} 季度', cal_cold: '寒冷', cal_hot: '炎热',
+    cal_unknown: '研究“龙巢历法”后，可以了解每个月份的影响。',
+    lysari_rain_left: 'Lysari 的甘霖：还剩 {0} 天', party_left: '茶会进行中：还剩 {0} 天', trip_away: '你正在{0}旅行，还有 {1} 天回来。',
+    observe: '观察星空', observe_d: '一颗流星正在划过。观测它可以获得学识和情报，偶尔还会有东西落下来。', paused_note: '游戏已暂停。',
+    log: '日志', queue: '队列', log_filter: '筛选', queue_d: '队列里的建筑和研究会在资源足够时按顺序自动完成，最多 {0} 项。在按钮右侧点“排队”即可加入。',
+    queue_empty: '队列是空的。', q_tech: '（研究）', remove: '移除', queue_clear: '清空队列', log_filter_d: '取消勾选可以隐藏对应类型的日志。', clear_log: '清空日志',
+    copy: '复制', confirm: '确定', close: '关闭',
+    export_t: '导出存档：复制下面的文本并保存好', import_t: '导入存档：粘贴存档文本', import_bad: '存档无法读取。',
+    t_s: '{0}秒', t_m: '{0}分{1}秒', t_h: '{0}小时{1}分', t_d: '{0}天{1}小时',
+
+    shift_hint: '按住 Shift 点击可以一次建造最多 10 座。', seg_queue: '排队', seg_queue_d: '加入建造队列，资源够了会自动完成。',
+    seg_sell: '拆除', seg_sell_d: '拆除一座，返还一半材料。', confirm_sell_bld: '确定拆除一座{0}吗？只返还一半材料。',
+    trip_nest: '你出门旅行了，暂时不能亲自动手。',
+    act_coins: '捡拾零钱', act_coins_d: '在宝藏堆的边缘捡一枚滚落的硬币。偶尔会有好运。',
+    act_refine: '换取柴薪', act_refine_d: '向路过的樵夫买柴：{0} 硬币换 1 柴薪。',
+    auto_refine: '自动换柴', auto_refine_d: '硬币超过上限的 95% 时，自动把一部分换成柴薪。',
+
+    dr_summary: '小龙 {0} / {1}，空闲 {2}，外出 {3}', dr_happy: '幸福度 {0}%，工作效率 ×{1}',
+    dr_upkeep: '每只小龙每秒消耗 {0} 硬币零花钱。成长等级、熟练度、属性相符与饱足都会提高工作效率。',
+    dr_none: '还没有小龙。建造幼龙窝后，只要有空位、手上有硬币，小龙会自己飞来。',
+    dr_manage: '管理', feed_all: '全部喂食', feed_all_d: '给所有饿着的小龙各发一份点心，优先用它们最爱吃的。饱足的小龙工作效率 +20%，熟练度涨得更快，也会提高幸福度。',
+    optimize: '按属性优化分配', optimize_d: '保持每个职业的人数不变，重新安排谁去做什么，让属性和熟练度最合适的小龙去干对应的活。',
+    unassign_all: '全部撤下', unassign_all_d: '让所有在家的小龙都回到空闲状态。',
+    hold_party: '举办茶会', hold_party_d: '幸福度 +30%，客流 +10%，持续 {0} 天，新小龙到来的速度翻倍。可以叠加延长。', any_goods: '任意商品',
+    dr_jobs: '职业', clerk_out: '招待进度 {0}/秒', cook_out: '后厨工作量 {0}/秒', gardener_out: '草地工作量 {0}/秒', caretaker_out: '幸福度 +{0}%',
+    per_dragon: '每只小龙：', job_note: '点“+”时会自动挑选最合适的空闲小龙，点“-”时会撤下最不合适的。',
+    dr_levels_note: '属性相符时效率 +{0}%，饱足时 +{1}%。熟练度会随工作时间增长，换工作后原来的熟练度会慢慢遗忘。战斗等级通过派遣与演武场提升，成长等级每月初有机会提升。',
+    dr_census: '名册', all_jobs: '全部职业', idle: '空闲', away: '外出中', home: '在家', all_elements: '全部元素',
+    dsort_cl: '按战斗等级', dsort_gl: '按成长等级', dsort_skill: '按熟练度', dsort_el: '按属性', dsort_job: '按职业', dsort_name: '按名字', dsort_fed: '先看饿的',
+    page_n: '第 {0} / {1} 页，共 {2} 只', no_match: '没有符合条件的内容。',
+    lock: '收藏', lock_d: '收藏的小龙不能被放生。', leader_badge: '领头', cl_short: '战斗', gl_short: '成长',
+    fed_days: '饱足 {0} 天', hungry: '有点饿', fav_food: '最爱：{0}', eff_x: '效率 ×{0}', el_match: '属性相符',
+    feed: '喂食', feed_d: '喂一份点心。有它最爱的就喂最爱的，饱足时间翻倍；没有的话喂库存里最便宜的。',
+    rename: '改名', rename_t: '给 {0} 起个新名字（建议使用英文名）', set_leader: '设为领头', unset_leader: '取消领头',
+    leader_d: '领头龙会按自己的属性给全体带来加成，成长等级越高加成越大。它的加成：{0}',
+    release: '放生', confirm_release: '确定要放生 {0} 吗？它会离开龙巢，并留下一件纪念品。', release_d: '让它去外面的世界闯一闯。收藏的小龙和领头龙不能放生。',
+    rs_none: '暂时没有可以研究的项目。', rs_show_done: '显示已完成的研究（{0}）', rs_hide_done: '隐藏已完成的研究（{0}）',
+
+    ws_business: '营业', ws_need_roasting: '店里还没有可卖的东西。先去研究“咖啡烘焙”并建造咖啡吧台。',
+    ws_queue: '等候的顾客 {0} / {1}，每天约来 {2} 位',
+    ws_stats: '已招待 {0} 位，错过 {1} 位，缺货 {2} 次，声望 {3}（客流 {4}）',
+    ws_serve: '按住招待顾客', ws_serve_d: '按住不放，亲自招待等候的顾客，进度条会走得快很多。亲自招待的顾客多给 25% 小费。店员会以自己的速度推进同一根进度条。',
+    ws_show: '现场焦糖秀', ws_show_d: '把布丁端到顾客面前，另一只手托着 Rhasari，撒上红糖，让她当场喷成焦糖。收入约 {0}，声望 +0.3，还可能听到情报。',
+    customer: '等候的顾客',
+    ws_menu: '菜单与后厨', ws_menu_d: '厨师会把库存补到“目标库存”，目标为 0 的不做。每样东西都要花时间制作：厨师按自己的速度推进进度条，你也可以按住“制作”亲自动手。卖得太多的商品需求会下降、售价随之降低，过一段时间会慢慢恢复，所以菜单越丰富越好。热天冷饮更受欢迎，冷天热饮更受欢迎。',
+    ws_cooks: '厨师每秒提供 {0} 份工作量。每多一座同类工位，该工位的配方快 25%。',
+    menu_goods: '商品', menu_proc: '半成品', menu_stations: '工位',
+    stations_d: '工位决定能做什么。每多一座同类工位，那一类配方做得更快。焦糖类由 Rhasari 亲自喷火。',
+    no_proc: '还没有解锁半成品。',
+    m_name: '名称', m_stock: '库存', m_price: '售价', m_demand: '需求', m_target: '目标库存', m_make: '按住制作', m_sale: '上架', m_snack: '员工零食',
+    m_name_d: '悬停查看原料与介绍。', m_stock_d: '当前数量与上限。', m_price_d: '当前售价，已计入需求的影响。半成品显示的是橱窗价。', m_demand_d: '需求越高，售价越高，顾客也越爱点。每卖出一份下降一点，每天慢慢恢复。',
+    m_target_d: '厨师会把库存补到这个数。', m_make_d: '按住不放亲自动手，进度条走满就做好一份。开工时会先用掉原料。', m_sale_d: '取消勾选后，顾客不会点它。', m_snack_d: '勾选后小龙可以在工作间隙吃它，提高幸福度。',
+    rh_feed_pudding: '喂她吃布丁', rh_feed_caramel: '喂她吃焦糖布丁', rh_feed_d: '心情 +{0}。她越开心，再喂的效果越小。',
+    rh_insult: '叫她“烧火鸟”', rh_insult_d: '她会气得喷火：火力 +2，心情 -15。冷却 30 秒。',
+    rh_note: '火力会随时间恢复，心情越好恢复越快。心情越高，掉得越快。心情很好时，她偶尔会掉落绒羽；她名义上的姐姐 Lysari 也更可能来访。',
+    rh_recruit: '用布丁连拐带骗', rh_recruit_d: '工坊的炉子需要一只会喷火的鸟。', rh_unknown: '窗外好像有什么在发光。也许等你会做布丁时，它会靠近一点。',
+    ws_window: '窗台', ws_snack: '给 Rakuakira 留零食（每月初消耗 1 份最便宜的甜品，没有甜品时消耗 2 杯饮品）',
+    raku_never: 'Rakuakira 每月初会来一次。', raku_last: '上次来访：{0}，留下情报 {1}，{2}', raku_fed: '吃到了零食。', raku_unfed: '没有吃到零食。',
+    lysari_note: 'Rhasari 名义上的姐姐。Rhasari 心情不低于 70 时，她每月初有机会来访，带来礼物和甘霖：当月作物长得更快，地块每天补水。工坊只接待小型龙族，所以她只能趴在窗外。',
+    lysari_stat: '来访次数：{0}',
+    ws_display: '展柜', ws_display_d: '每位上门的顾客有 {0} 的概率顺便买走展柜里的一件物品，按全价支付。',
+    each: '每件', take_back: '取回', empty_slot: '空的展柜', put_one: '放入 1 件', put_all: '全部放入',
+    ws_trip: '旅行', trip_d: '一有点闲钱，你就想出门。每次旅行会花光全部硬币，还要带上一些翎鸾当路费；十天后带着纪念品、情报和永久的“旅行见闻”回来。',
+    trip_stat: '旅行见闻 {0}：硬币产量 {1}，客流 {2}，物品价值 {3}',
+    trip_go: '出门旅行', trip_go_d: '花光口袋里所有的硬币，并支付翎鸾路费。旅行期间不能亲自动手，店里由小龙照看。',
+
+    farm_d: '工坊旁边的草地。开垦地块、选好种植计划，园丁会按顺序收获、播种、浇水和施肥，一次只做一件事；你也可以按住下面的按钮亲自干活。水分太少或太多都会长得慢，肥力越高产量越高。',
+    farm_stat: '地块 {0}，园丁每秒工作量 {1}，每天自动补水 {2}，本月炎热程度 {3}',
+    farm_cold: '寒冷的月份，没有温室保护的作物长得很慢。目前有 {0} 块地受温室保护。', farm_hot: '炎热的月份，水分蒸发得很快。',
+    reclaim: '开垦', reclaim_d: '开垦一块新地。地越多，开垦越贵。',
+    water_all: '按住浇水', water_all_d: '按住不放，一块一块地把水分浇到 80；所有地块都到 80 以后继续按，会浇到 100。',
+    harvest_all: '按住收获', harvest_all_d: '按住不放，逐块收获成熟的作物。',
+    fert_all: '按住施肥', fert_all_d: '按住不放，一块一块地把肥力提高到 80，之后提高到 100。每点肥力消耗 0.2 肥料。',
+    compost_imp: '堆肥杂质', compost_imp_d: '把仓库里所有的杂质扔进堆肥箱，每份变成 5 肥料。',
+    no_plan: '不种', plant_all: '全部改种为', apply: '应用', auto_fert: '园丁自动施肥',
+    farm_plots: '地块', no_plots: '还没有开垦任何地块。',
+    p_no: '编号', p_plan: '种植计划', p_crop: '当前', p_grow: '生长', p_water: '水分', p_fert: '肥力', p_act: '操作',
+    gh_mark: '温室', ripe: '成熟', empty_plot: '空地', empty_plot_d: '选好种植计划后，园丁会来播种，你也可以按住“播种”。播种需要支付种子钱。',
+    water_d: '每天都会蒸发，越热、水越多蒸发越快。65 左右最适合生长。', fert_d: '每次收获消耗 12。肥力越高，长得越快、收得越多。',
+    water: '浇水', fertilize: '施肥', harvest: '收获', uproot: '铲除',
+    farm_bld: '草地建筑', crop_guide: '作物图鉴',
+    c_crop: '作物', c_out: '产出', c_days: '天数', c_yield: '产量', c_seed: '种子钱', c_pref: '喜欢的月份', c_state: '状态',
+    known: '已掌握', need_tech: '需要研究“{0}”', need_trade: '与{0}贸易获得种子',
+    f_season: '季节', f_water: '水分', f_fert: '肥力', f_bonus: '其他加成', f_yield: '预计收获',
+
+    ex_slots: '派遣中 {0} / {1}，派遣速度 {2}', ex_need_station: '需要建造驿站才能派遣。', ex_no_dragon: '没有在家的小龙。',
+    rec_cl: '推荐战斗等级 {0}', n_days: '{0} 天', n_days_left: '还剩 {0} 天', ex_dragon: '派谁去', ex_dest: '去哪里',
+    ex_preview: '预计带回约 {0} 种物品，物品等级约 {1}（最高 {2}），受伤概率 {3}，往返约 {4} 天。',
+    ex_go: '派遣', ex_go_d: '小龙会暂时离开岗位，回来后继续原来的工作。出发时需要支付翎鸾路费。', ex_active: '进行中的派遣', ex_dests: '地点',
+    ex_h_name: '地点', ex_h_area: '所属', ex_h_rec: '推荐战斗等级', ex_h_days: '天数', ex_h_el: '元素偏好', ex_h_state: '状态',
+    ex_hidden: '需要研究“{0}”', unlocked: '已解锁', ex_unlock: '用 {0} 情报解锁',
+    ex_rules: '战斗等级越高，带回的物品种类越多、等级与价值越高；低于推荐等级时有受伤风险，受伤会让收获减半。不同地点偏好不同的元素与物品类别。每次派遣还会带回一些贵重品，越远越多。在某个氏族的领地完成派遣后，可以和该氏族贸易。',
+    ex_history: '最近的归来',
+
+    al_rules: '放入 1 到 7 件物品。每件提供“炼金等级的平方”点，总点数开方即产物的最高等级；产物等级在最低与最高之间随机，再在该等级的物品中按稀有度加权抽取。稀有度 5、6 必定成功；稀有度 4、3、2、1 分别有 5%、10%、20%、35% 的概率失败并变成杂质。月相会额外增减 Rare 1 到 4 的杂质概率，从 -10% 到 +25% 不等。',
+    al_click_remove: '点击移出', al_empty: '空',
+    al_points: '点数 {0}，开方 {1}，最高等级 {2}。产物等级在 {3} 到 {4} 之间随机。',
+    al_recipe_known: '这是已知的固定配方，产物为 {0}。', al_recipe_unknown: '炉子发出了奇怪的共鸣……这似乎是某个固定配方。',
+    al_rarity_range: '可能的稀有度：Rare {0} 到 Rare {1}', al_pick: '从下方的材料中选择物品放入炉中。',
+    al_fail: '失败率（含月相）：', al_guard: 'Rhasari 护火（消耗 2 火力，本次失败率减半）',
+    al_go: '开始炼金', al_go_d: '消耗炉中的全部材料。', al_clear: '清空',
+    al_last: '上一次的产物', al_almost: '差一点就是 {0} 了。', al_by_recipe: '来自固定配方', al_rolled: '本次抽到的等级：{0}',
+    al_materials: '材料', al_add: '放入', al_recipes: '配方书',
+    search: '搜索', inv_empty: '没有物品。',
+    sort_lv: '按等级', sort_r: '按稀有度', sort_value: '按价值', sort_count: '按数量', sort_name: '按名称',
+
+    trade_d: '用商品和翎鸾与各方交换资源、元素结晶、贵重品和种子。每次交易会提高关系，关系越好换回越多。每个伙伴都有最喜欢和不营业的月份。',
+    trade_locked: '在{0}完成一次派遣后，就能结识他们。', trade_best: '本月是他们最喜欢的月份，收获 +25%', trade_open: '本月营业', trade_closed: '本月不营业',
+    trade_best_m: '最喜欢：{0}', trade_closed_m: '不营业：{0}', relation: '关系', trade_mult: '收获 {0}',
+    trade_wants: '需要：{0} ×{1}（现有 {2}）', kind_drink: '饮品', kind_dessert: '甜品', kind_any: '任意商品', trade_cost: '外加 {0} 翎鸾路费',
+    trade_gives: '可能换回：', seed_of: '{0}种子', got_mark: '（已获得）', do_trade: '交易', trade_will: '将会送出：{0}',
+
+    inv_summary: '物品 {0} 种，共 {1} 件。图鉴 {2} / {3}', inv_items: '物品', inv_codex: '图鉴',
+    codex_d: '见过的物品会记录在这里。悬停在没见过的物品上，可以看到它的获取途径。',
+    owl_note: '路过的猫头鹰商人会以四成价格收购物品。放进展柜能卖到全价，但要等顾客上门。收翎鸾还是硬币，取决于工坊页的收款方式。',
+    inv_h_name: '名称', inv_h_lv: '等级', inv_h_r: '稀有度', inv_h_el: '元素', inv_h_cat: '类别', inv_h_n: '数量', inv_h_v: '价值', inv_h_act: '操作',
+    sell_one: '卖 1（{0}）', sell_all: '全卖', confirm_sell: '确定把 {1} 件 {0} 卖给猫头鹰商人吗？', to_display: '放入展柜',
+
+    cm_letter: 'Ayrelia 的来信', cm_left: '本季度还剩 {0} 天。已完成委托 {1} 份。',
+    cm_note: '每个季度初，Rakuakira 会送来新的委托。一开始每季度只有 1 份，可以用青睐兑换更多，最多 4 份。季度结束时，未完成的委托会被收回，没有惩罚。',
+    cm_auto_pick: '提交时会自动挑选价值最低的符合条件的物品。',
+    cm_done: '已完成', cm_progress: '进度 {0} / {1}', cm_reward: '奖励：', cm_submit: '提交', cm_claim: '领取', cm_will_use: '将会提交',
+    cm_favor: 'Ayrelia 的青睐', cm_favor_have: '青睐：{0}', owned_mark: '（已拥有）',
+
+    rec_ach: '成就', ach_count: '已达成 {0} / {1}', rec_stats: '统计',
+    st_time: '游戏时长', st_year: '当前年份', st_clicks: '捡零钱次数', st_dragons: '小龙数量', st_served: '招待顾客', st_earned: '收入的硬币',
+    st_crafted: '后厨制作', st_harvests: '收获次数', st_dispatches: '派遣次数', st_alch: '炼金次数', st_trades: '贸易次数', st_comm: '完成委托',
+    st_parties: '举办茶会', st_stars: '观测流星', st_fed: '喂食次数', st_released: '放生小龙', st_insults: '叫 Rhasari“烧火鸟”', st_trips: '旅行次数', st_codex: '图鉴',
+    e_windowSlots: '橱窗陈列位 {0}',
+    e_windowChance: '橱窗成交率 {0}',
+    q_g: '金',
+    q_s: '银',
+    q_c: '铜',
+    resnote_quill: '翎鸾是龙巢的贸易硬通货：1 金翎 = 12 银翎 = 144 铜翎。来自营业、橱窗、展柜与猫头鹰商人，用于中后期的研究、派遣、旅行和贸易。',
+    lux_note: '贵重品：有库存时幸福度 +{0}%，每只小龙每秒把玩消耗 {1}。来自派遣与贸易。',
+    happy_lux: '贵重品',
+    rate_luxuse: '小龙把玩',
+    cal_phase: '{0}，炼金额外杂质 {1}',
+    phase_0: '上弦',
+    phase_1: '下弦',
+    ws_serving: '招待进度',
+    ws_serve_rate: '店员每秒推进 {0}',
+    pay_in: '收款方式',
+    pay_quill: '收翎鸾',
+    pay_coins: '收硬币',
+    pay_d: '翎鸾得来不易，却是中后期研究、派遣、旅行与贸易的必需品。收硬币来得快，但很亏：每 1 铜翎的货款只换 {0} 硬币。翎鸾装满时会自动改收硬币。',
+    ws_cook_now: '厨师正在做：{0}',
+    ws_cook_idle: '厨师现在没有活干。',
+    ws_win: '橱窗',
+    ws_win_d: '把半成品摆进橱窗。每位上门的顾客有 {0} 的概率顺便买走其中一件，按橱窗价付款。勾选“自动补货”的格子会从库存里补到 5 件。广告牌和陈列艺术可以提高成交率。',
+    win_auto: '自动补货',
+    win_put: '摆 1 件',
+    win_put5: '摆 5 件',
+    win_empty: '空的陈列位',
+    win_none: '还没有可以摆的半成品。',
+    inv_proc: '半成品',
+    inv_proc_d: '半成品可以继续加工成更值钱的商品，也可以摆进工坊的橱窗出售。',
+    to_window: '摆进橱窗',
+    inv_h_wp: '橱窗价',
+    trip_quill: '翎鸾路费',
+    plant_hold: '按住播种',
+    plant_hold_d: '按住不放，按种植计划逐块播种。每块需要支付种子钱。',
+    farm_gardener: '园丁正在：{0}',
+    farm_idle: '园丁现在没有活干。',
+    farm_you: '你正在：{0}',
+    task_harvest: '收获 {0} 号地',
+    task_plant: '给 {0} 号地播种',
+    task_water: '给 {0} 号地浇水，浇到 {1}',
+    task_fert: '给 {0} 号地施肥，施到 {1}',
+    hold_hint: '按住不放才会持续工作。',
+    al_moon: '当前月相：{0}',
+    ex_cost: '路费 {0}',
+    favor_lv: '（{0} / {1} 级）',
+    favor_need: '需要先兑换“{0}”。',
+    st_quill: '收入的翎鸾',
+    st_window: '橱窗卖出',
+    st_arrived: '上门的顾客',
+    c_hate: '讨厌的月份',
+    f_hate: '讨厌本月',
+    hate_now: '讨厌本月',
+    crop_guide_d: '现在是{0}。在作物讨厌的月份收获，产量只有四分之一；受温室保护的地块不受影响。表中当前月份以颜色标出：绿色是喜欢，红色是讨厌。'
+  },
+
+  en: {
+    game_title: 'Ciorre\'s Alchemy Workshop',
+    lnk_lang: '中文', lnk_dark: 'Dark', lnk_light: 'Light', lnk_pause: 'Pause', lnk_resume: 'Resume', lnk_save: 'Save', lnk_export: 'Export', lnk_import: 'Import', lnk_reset: 'Reset',
+    confirm_reset: 'Reset the game? All progress will be lost.',
+    tab_nest: 'Dragonest', tab_dragons: 'Dragonlings', tab_research: 'Research', tab_workshop: 'Workshop', tab_meadow: 'Meadow',
+    tab_expedition: 'Expeditions', tab_alchemy: 'Alchemy', tab_trade: 'Trade', tab_inventory: 'Storage', tab_commissions: 'Commissions', tab_records: 'Records',
+    per_sec: '/s', cap_short: '(over limit)', list_sep: ', ', colon: ': ', nothing: 'nothing', or: ' or ', all: 'All', day_unit: 'd',
+
+    e_prod: '{0} {1}', e_cap: '{0} limit {1}', capgrp_goods: 'Each good', capgrp_processed: 'Each prepared ingredient', capgrp_ingredient: 'Each ingredient',
+    e_mult: '{0} production {1}', e_job: '{0} efficiency {1}', e_price: '{0} price {1}', e_priceSt: '{0} goods price {1}',
+    e_dispEl: '{0} items on expeditions {1}', e_dispCat: '{0} finds on expeditions {1}',
+    e_housing: 'Dragonling housing {0}', e_custRate: 'Base customers {0}/day', e_custMult: 'Customers {0}', e_queueCap: 'Waiting customer limit {0}',
+    e_dispSlots: 'Expedition slots {0}', e_dispSpeed: 'Expedition speed {0}', e_dispLoot: 'Expedition loot amount {0}', e_dispTypes: 'Expedition loot kinds {0}',
+    e_itemValue: 'Item value {0}', e_alchFloor: 'Alchemy minimum level raised to {0} of the maximum', e_alchFail: 'Alchemy failure chance -{0}',
+    e_flameMax: 'Rhasari\'s max flame {0}', e_flameRegen: 'Rhasari\'s flame regen {0}', e_displaySlots: 'Display cases {0}',
+    e_displayChance: 'Display sale chance {0}', e_trainXp: 'Combat XP for dragonlings at home {0}/s', e_growth: 'Dragonling growth {0}',
+    e_buildCost: 'Building cost {0}', e_rakuIntel: 'Intel from Rakuakira {0}', e_commReward: 'Commission rewards {0}',
+    e_commSlots: 'Commissions per quarter {0}', e_noInjury: 'Expeditions no longer cause injuries', e_showMult: 'Live Caramel Show income {0}',
+    e_upkeepRelief: 'Dragonling pocket money -{0}', e_crowdRelief: 'Crowding unhappiness -{0}', e_happiness: 'Happiness {0}%', e_priceAll: 'All goods price {0}',
+    e_skillXP: 'Job skill gain {0}/s', e_farmGrowth: 'Crop growth {0}', e_cropYield: 'Crop yield {0}', e_waterRegen: 'Plot water per day {0}',
+    e_greenhouse: 'Plots sheltered by greenhouses {0}', e_tradeRatio: 'Trade yield {0}', e_starChance: 'Daily shooting star chance {0}', e_kitchenSpeed: 'Kitchen speed {0}',
+
+    built_done: 'Already built.', all_coins: 'All your coins (at least)', per_building: 'Each:', built: '(built)',
+    station_note: 'This station makes: {0}', unlocks_bld: 'Unlocks buildings: {0}',
+    alch_level: 'Alchemy level', rarity: 'Rarity', element: 'Element', category: 'Type', value: 'Value', alch_points: 'Alchemy points', owned: 'Owned',
+    uses: 'Uses', sources: 'How to obtain',
+    use_alch: 'Material for free alchemy', use_recipe: 'Ingredient of fixed recipes: {0}', use_build: 'Cost of a building or research', use_compost: 'Can be composted into fertilizer', use_sell: 'Sell to the owl merchant or put on display',
+    src_disp: 'May come back from expeditions to {0}', src_crystal: 'Extra drop on expeditions; Lysari brings some too', src_trade: 'Trade with {0}', src_recipe: 'Fixed recipe', src_alch: 'Product of free alchemy',
+    src_fail: 'Produced when alchemy fails', src_rhasari: 'Dropped by Rhasari when she is very happy', src_lysari: 'Occasionally dropped when Lysari visits', src_ayrelia: 'Exchanged for Ayrelia\'s Favor', src_star: 'May fall when you observe a shooting star',
+    stock: 'Stock', station: 'Station', price: 'Price', demand: 'Demand', ingredients: 'Ingredients', flame: 'Flame', mood: 'Mood',
+    src_crop: 'Grown from {0}, ripe in about {1} days.', src_bld: 'Produced by the {0}.', used_in: 'Used in: {0}',
+    rate_bonus: 'Bonus {0}', rate_upkeep: 'Dragonling pocket money', rate_snack: 'Staff snacks', rate_total: 'Total', rate_flow: 'Actual change (incl. shop and kitchen)',
+    to_full: 'Until full', to_empty: 'Until empty',
+    resnote_coins: 'Pocket money is your biggest expense. Coins from expeditions and commissions arrive instantly and are not counted here. If the shop takes coins instead of quills, each copper quill of value only brings 20 coins.',
+    resnote_firewood: 'Buy it from passing woodcutters: 100 coins for 1 firewood.',
+    resnote_lore: 'Used for research. Nooks, halls, steles and the stargazing deck raise the limit.',
+    resnote_fertilizer: 'Made by compost bins; alchemy impurities can go in too. Each point of fertility uses 0.2.',
+    resnote_renown: 'Renown gives {0} customers. +0.02 per customer served, +0.3 per Live Caramel Show; commissions give renown too. It slowly fades each day.',
+    resnote_intel: 'From customer gossip, Rakuakira, expeditions, couriers and stargazing. Used for research and unlocking destinations.',
+    resnote_favor: 'Earned from Ayrelia\'s commissions. Spend it on the Commissions tab.',
+
+    happiness: 'Happiness', happy_desc: 'Happiness multiplies every dragonling\'s work, down to a minimum of 25%. Beyond 5 dragonlings, each one takes away 2%.',
+    happy_base: 'Base', happy_crowd: 'Crowding', happy_bld: 'Buildings and month', happy_snack: 'Staff snacks', happy_fed: 'Well-fed dragonlings', happy_care: 'Caretakers', happy_party: 'Tea party',
+    happy_factor: 'Current work multiplier: {0}',
+    dragonlings: 'Dragonlings', idle_n: '{0} idle', party_on: 'Party', only_stock: 'Only show goods in stock', crystals: 'Elemental Crystals',
+    dragonlings_tip: 'Each dragonling needs {0} coins/s of pocket money; without coins they start to leave. Nests and dens provide housing, and new dragonlings fly in when there is room and you have coins.',
+    cal_era: 'Flamewing Twin-string Calendar', cal_date: 'Year {0}, {1} {2}', cal_quarter: 'Quarter {0}', cal_cold: 'cold', cal_hot: 'hot',
+    cal_unknown: 'Research Dragonest Calendar to learn what each month brings.',
+    lysari_rain_left: 'Lysari\'s Rain: {0} days left', party_left: 'Tea party: {0} days left', trip_away: 'You are travelling in {0}. Back in {1} days.',
+    observe: 'Observe the sky', observe_d: 'A shooting star is passing. Observe it for lore and intel; sometimes something falls down too.', paused_note: 'The game is paused.',
+    log: 'Log', queue: 'Queue', log_filter: 'Filter', queue_d: 'Buildings and research in the queue complete automatically, in order, when affordable. Up to {0} entries. Use the "Queue" segment on a button to add one.',
+    queue_empty: 'The queue is empty.', q_tech: '(research)', remove: 'Remove', queue_clear: 'Clear queue', log_filter_d: 'Untick a type to hide those log entries.', clear_log: 'Clear log',
+    copy: 'Copy', confirm: 'OK', close: 'Close',
+    export_t: 'Export: copy the text below and keep it safe', import_t: 'Import: paste your save text', import_bad: 'That save could not be read.',
+    t_s: '{0}s', t_m: '{0}m {1}s', t_h: '{0}h {1}m', t_d: '{0}d {1}h',
+
+    shift_hint: 'Shift-click to build up to 10 at once.', seg_queue: 'Queue', seg_queue_d: 'Add to the build queue; it completes automatically when affordable.',
+    seg_sell: 'Sell', seg_sell_d: 'Tear one down and get half the materials back.', confirm_sell_bld: 'Tear down one {0}? You only get half the materials back.',
+    trip_nest: 'You are away on a trip and cannot work by hand.',
+    act_coins: 'Pick up loose coins', act_coins_d: 'Pick up a coin that rolled off the edge of a hoard. Sometimes you get lucky.',
+    act_refine: 'Buy firewood', act_refine_d: 'Buy firewood from a passing woodcutter: {0} coins for 1 firewood.',
+    auto_refine: 'Auto-buy firewood', auto_refine_d: 'When coins pass 95% of the limit, some are exchanged for firewood automatically.',
+
+    dr_summary: 'Dragonlings {0} / {1}, idle {2}, away {3}', dr_happy: 'Happiness {0}%, work x{1}',
+    dr_upkeep: 'Each dragonling takes {0} coins/s of pocket money. Growth Level, job skill, matching element and being well-fed all raise work efficiency.',
+    dr_none: 'No dragonlings yet. Build a Dragonling Nest; when there is room and you have coins, they will fly in on their own.',
+    dr_manage: 'Management', feed_all: 'Feed everyone', feed_all_d: 'Give every hungry dragonling a snack, favourites first. Well-fed dragonlings work 20% better, learn faster and raise happiness.',
+    optimize: 'Optimize by element', optimize_d: 'Keep the number of workers in each job, but reshuffle who does what so the best-suited dragonlings get each job.',
+    unassign_all: 'Unassign all', unassign_all_d: 'Send every dragonling at home back to idle.',
+    hold_party: 'Hold a tea party', hold_party_d: 'Happiness +30%, customers +10% for {0} days, and new dragonlings arrive twice as fast. Can be stacked.', any_goods: 'Any goods',
+    dr_jobs: 'Jobs', clerk_out: 'serving {0}/s', cook_out: 'kitchen work {0}/s', gardener_out: 'meadow work {0}/s', caretaker_out: 'happiness +{0}%',
+    per_dragon: 'Per dragonling: ', job_note: '"+" picks the best-suited idle dragonling; "-" removes the least suited one.',
+    dr_levels_note: 'Matching element gives +{0}%, being well-fed +{1}%. Job skill grows with time on the job and slowly fades after switching jobs. Combat Level rises through expeditions and the Training Ground; Growth Level may rise at the start of each month.',
+    dr_census: 'Roster', all_jobs: 'All jobs', idle: 'Idle', away: 'Away', home: 'Home', all_elements: 'All elements',
+    dsort_cl: 'By Combat Level', dsort_gl: 'By Growth Level', dsort_skill: 'By job skill', dsort_el: 'By element', dsort_job: 'By job', dsort_name: 'By name', dsort_fed: 'Hungry first',
+    page_n: 'Page {0} / {1}, {2} total', no_match: 'Nothing matches.',
+    lock: 'Favourite', lock_d: 'Favourited dragonlings cannot be released.', leader_badge: 'Lead', cl_short: 'CL', gl_short: 'GL',
+    fed_days: 'Well-fed {0}d', hungry: 'Peckish', fav_food: 'Loves: {0}', eff_x: 'Eff x{0}', el_match: 'Element match',
+    feed: 'Feed', feed_d: 'Give it a snack. Its favourite if in stock (twice as filling), otherwise the cheapest good.',
+    rename: 'Rename', rename_t: 'A new name for {0}', set_leader: 'Make leader', unset_leader: 'Remove leader',
+    leader_d: 'The lead dragonling gives everyone a bonus based on its element, stronger with higher Growth Level. Its bonus: {0}',
+    release: 'Release', confirm_release: 'Release {0}? It will leave the nest and leave a keepsake behind.', release_d: 'Let it go see the world. Favourites and the leader cannot be released.',
+    rs_none: 'Nothing to research right now.', rs_show_done: 'Show completed research ({0})', rs_hide_done: 'Hide completed research ({0})',
+
+    ws_business: 'Business', ws_need_roasting: 'There is nothing to sell yet. Research Coffee Roasting and build a Coffee Bar.',
+    ws_queue: 'Waiting customers {0} / {1}, about {2} arrive per day',
+    ws_stats: 'Served {0}, missed {1}, out of stock {2}, renown {3} (customers {4})',
+    ws_serve: 'Hold to serve', ws_serve_d: 'Hold to serve waiting customers yourself; the bar fills much faster. Customers you serve tip 25% more. Clerks push the same bar at their own pace.',
+    ws_show: 'Live Caramel Show', ws_show_d: 'Set a pudding in front of the customer, Rhasari perched on your other arm, sprinkle brown sugar, and let her torch it into caramel on the spot. Earns about {0} and +0.3 renown, and you may overhear some intel.',
+    customer: 'Waiting customer',
+    ws_menu: 'Menu and Kitchen', ws_menu_d: 'Cooks restock each item up to its target; a target of 0 means never. Everything takes time to make: cooks push the progress bar at their own pace, and you can hold "Make" to help. Goods that sell a lot lose demand and price, recovering over time, so a varied menu pays. Cold drinks sell better in hot months, hot drinks in cold ones.',
+    ws_cooks: 'Cooks provide {0} work/s. Each extra station of a kind makes its recipes 25% faster.',
+    menu_goods: 'Goods', menu_proc: 'Prepared', menu_stations: 'Stations',
+    stations_d: 'Stations decide what can be made. More of the same station make its recipes faster. Caramel goods are torched by Rhasari herself.',
+    no_proc: 'No prepared ingredients unlocked yet.',
+    m_name: 'Name', m_stock: 'Stock', m_price: 'Price', m_demand: 'Demand', m_target: 'Target', m_make: 'Hold to make', m_sale: 'On sale', m_snack: 'Staff snack',
+    m_name_d: 'Hover to see ingredients and description.', m_stock_d: 'Current amount and limit.', m_price_d: 'Current price, including demand. Prepared goods show their window price.', m_demand_d: 'Higher demand means a higher price and more orders. It drops a little with each sale and recovers daily.',
+    m_target_d: 'Cooks restock up to this number.', m_make_d: 'Hold to make it yourself; one is done each time the bar fills. Ingredients are used when you start.', m_sale_d: 'Untick and customers will not order it.', m_snack_d: 'Tick to let dragonlings snack on it during breaks, raising happiness.',
+    rh_feed_pudding: 'Feed her pudding', rh_feed_caramel: 'Feed her caramel pudding', rh_feed_d: 'Mood +{0}. The happier she is, the less each treat helps.',
+    rh_insult: 'Call her "stoker bird"', rh_insult_d: 'She will spit fire in anger: Flame +2, Mood -15. 30s cooldown.',
+    rh_note: 'Flame regenerates over time, faster in a good mood. High moods fade faster than low ones. When very happy she sometimes drops down feathers, and her big sister Lysari is more likely to visit.',
+    rh_recruit: 'Lure her with pudding', rh_recruit_d: 'The workshop furnace needs a bird that breathes fire.', rh_unknown: 'Something is glowing outside the window. Maybe it will come closer once you can make pudding.',
+    ws_window: 'Windowsill', ws_snack: 'Leave a snack for Rakuakira (the cheapest dessert at the start of each month, or 2 drinks if there is none)',
+    raku_never: 'Rakuakira visits at the start of every month.', raku_last: 'Last visit: {0}, left {1} intel, {2}', raku_fed: 'got a snack.', raku_unfed: 'got no snack.',
+    lysari_note: 'Rhasari\'s big sister in name. When Rhasari\'s mood is 70 or more, she may visit at the start of a month with gifts and rain: crops grow faster that month and plots regain water daily. The workshop only serves small dragons, so she can only peek through the window.',
+    lysari_stat: 'Visits: {0}',
+    ws_display: 'Display Cases', ws_display_d: 'Each arriving customer has a {0} chance to buy one displayed item at full value.',
+    each: 'each', take_back: 'Take back', empty_slot: 'Empty case', put_one: 'Display 1', put_all: 'Display all',
+    ws_trip: 'Travel', trip_d: 'The moment you have spare money, you want to go out. Each trip spends every coin you have plus some quills for the road; ten days later you return with souvenirs, intel and permanent Travel Memories.',
+    trip_stat: 'Travel Memories {0}: coins {1}, customers {2}, item value {3}',
+    trip_go: 'Go on a trip', trip_go_d: 'Spend every coin in your pocket and pay quills for the road. While away you cannot work by hand; the dragonlings mind the shop.',
+
+    farm_d: 'The meadow beside the workshop. Clear plots and set a planting plan; gardeners harvest, sow, water and fertilize in that order, one chore at a time. You can also hold the buttons below to work yourself. Too little or too much water slows growth; higher fertility means bigger harvests.',
+    farm_stat: 'Plots {0}, gardener work {1}/s, water regained {2}/day, heat this month {3}',
+    farm_cold: 'A cold month: crops without a greenhouse grow slowly. {0} plots are sheltered.', farm_hot: 'A hot month: water evaporates quickly.',
+    reclaim: 'Clear a plot', reclaim_d: 'Clear a new plot. Each one costs more.',
+    water_all: 'Hold to water', water_all_d: 'Hold to water plot by plot up to 80; once every plot is at 80, keep holding to go up to 100.',
+    harvest_all: 'Hold to harvest', harvest_all_d: 'Hold to harvest ripe plots one by one.',
+    fert_all: 'Hold to fertilize', fert_all_d: 'Hold to raise fertility plot by plot up to 80, then up to 100. Each point uses 0.2 fertilizer.',
+    compost_imp: 'Compost impurities', compost_imp_d: 'Toss every impurity into the compost bin; each becomes 5 fertilizer.',
+    no_plan: 'Nothing', plant_all: 'Set every plan to', apply: 'Apply', auto_fert: 'Gardeners fertilize',
+    farm_plots: 'Plots', no_plots: 'No plots cleared yet.',
+    p_no: '#', p_plan: 'Plan', p_crop: 'Now', p_grow: 'Growth', p_water: 'Water', p_fert: 'Fertility', p_act: 'Actions',
+    gh_mark: 'GH', ripe: 'Ripe', empty_plot: 'Empty', empty_plot_d: 'Pick a plan and a gardener will sow it, or hold "Sow" yourself. Sowing costs seeds.',
+    water_d: 'Evaporates daily; faster when hot or very wet. Around 65 is ideal.', fert_d: 'Each harvest uses 12. Higher fertility grows faster and yields more.',
+    water: 'Water', fertilize: 'Fertilize', harvest: 'Harvest', uproot: 'Uproot',
+    farm_bld: 'Meadow buildings', crop_guide: 'Crop guide',
+    c_crop: 'Crop', c_out: 'Yields', c_days: 'Days', c_yield: 'Amount', c_seed: 'Seeds', c_pref: 'Favourite months', c_state: 'Status',
+    known: 'Known', need_tech: 'Research {0}', need_trade: 'Seeds from {0}',
+    f_season: 'Season', f_water: 'Water', f_fert: 'Fertility', f_bonus: 'Other bonuses', f_yield: 'Expected harvest',
+
+    ex_slots: 'On expedition {0} / {1}, speed {2}', ex_need_station: 'Build a Waystation to send expeditions.', ex_no_dragon: 'No dragonlings are at home.',
+    rec_cl: 'Rec. CL {0}', n_days: '{0} days', n_days_left: '{0} days left', ex_dragon: 'Who', ex_dest: 'Where',
+    ex_preview: 'Expect about {0} kinds of items around level {1} (max {2}), injury chance {3}, round trip about {4} days.',
+    ex_go: 'Dispatch', ex_go_d: 'The dragonling leaves its job for a while and returns to it afterward. Pay its fare in quills when it sets out.', ex_active: 'Active expeditions', ex_dests: 'Destinations',
+    ex_h_name: 'Place', ex_h_area: 'District', ex_h_rec: 'Rec. CL', ex_h_days: 'Days', ex_h_el: 'Elements', ex_h_state: 'Status',
+    ex_hidden: 'Requires {0}', unlocked: 'Unlocked', ex_unlock: 'Unlock for {0} intel',
+    ex_rules: 'Higher Combat Level brings back more kinds of items with higher levels and value. Below the recommended level there is a risk of injury, which halves the haul. Each place favours different elements and item types. Every expedition also brings back some treasures, more from farther away. Finishing an expedition in a clan\'s territory lets you trade with that clan.',
+    ex_history: 'Recent returns',
+
+    al_rules: 'Put in 1 to 7 items. Each gives (alchemy level squared) points; the square root of the total is the maximum product level. The product level is random between the minimum and maximum, then an item of that level is drawn, weighted by rarity. Rare 5 and 6 always succeed; Rare 4, 3, 2 and 1 fail 5%, 10%, 20% and 35% of the time and become an Impurity. The moon phase adds between -10% and +25% to the impurity chance of Rare 1 to 4.',
+    al_click_remove: 'Click to remove', al_empty: 'Empty',
+    al_points: 'Points {0}, square root {1}, max level {2}. Product level is random from {3} to {4}.',
+    al_recipe_known: 'This is a known fixed recipe. Product: {0}.', al_recipe_unknown: 'The furnace hums strangely... this seems to be a fixed recipe.',
+    al_rarity_range: 'Possible rarity: Rare {0} to Rare {1}', al_pick: 'Pick materials from the list below.',
+    al_fail: 'Failure chance (incl. moon): ', al_guard: 'Rhasari guards the flame (2 flame, halves the failure chance)',
+    al_go: 'Transmute', al_go_d: 'Consumes every material in the furnace.', al_clear: 'Clear',
+    al_last: 'Last product', al_almost: 'It almost became {0}.', al_by_recipe: 'From a fixed recipe', al_rolled: 'Rolled level: {0}',
+    al_materials: 'Materials', al_add: 'Add', al_recipes: 'Recipe Book',
+    search: 'Search', inv_empty: 'No items.',
+    sort_lv: 'By level', sort_r: 'By rarity', sort_value: 'By value', sort_count: 'By count', sort_name: 'By name',
+
+    trade_d: 'Exchange goods and quills for resources, elemental crystals, treasures and seeds. Every trade improves relations, and better relations bring back more. Each partner has a favourite month and a month they are closed.',
+    trade_locked: 'Complete an expedition to {0} to meet them.', trade_best: 'Their favourite month: yield +25%', trade_open: 'Open this month', trade_closed: 'Closed this month',
+    trade_best_m: 'Favourite: {0}', trade_closed_m: 'Closed: {0}', relation: 'Relations', trade_mult: 'yield {0}',
+    trade_wants: 'Wants: {0} x{1} (you have {2})', kind_drink: 'drinks', kind_dessert: 'desserts', kind_any: 'any goods', trade_cost: 'plus {0} in quills for the road',
+    trade_gives: 'May give: ', seed_of: '{0} seeds', got_mark: ' (obtained)', do_trade: 'Trade', trade_will: 'You will hand over: {0}',
+
+    inv_summary: '{0} kinds, {1} items. Codex {2} / {3}', inv_items: 'Items', inv_codex: 'Codex',
+    codex_d: 'Items you have seen are recorded here. Hover over unknown ones to see how to obtain them.',
+    owl_note: 'A passing owl merchant buys items at 40% of their value. Display cases sell at full value, but you have to wait for customers. Whether you get quills or coins depends on the payment setting on the Workshop tab.',
+    inv_h_name: 'Name', inv_h_lv: 'Lv', inv_h_r: 'Rarity', inv_h_el: 'Element', inv_h_cat: 'Type', inv_h_n: 'Count', inv_h_v: 'Value', inv_h_act: 'Actions',
+    sell_one: 'Sell 1 ({0})', sell_all: 'Sell all', confirm_sell: 'Sell {1} x {0} to the owl merchant?', to_display: 'Display',
+
+    cm_letter: 'A letter from Ayrelia', cm_left: '{0} days left this quarter. Commissions completed: {1}.',
+    cm_note: 'At the start of each quarter Rakuakira brings new commissions. There is only 1 per quarter at first; spend favor for more, up to 4. Unfinished ones are collected at the end of the quarter, with no penalty.',
+    cm_auto_pick: 'The lowest-value matching items are picked automatically.',
+    cm_done: 'Completed', cm_progress: 'Progress {0} / {1}', cm_reward: 'Reward: ', cm_submit: 'Submit', cm_claim: 'Claim', cm_will_use: 'Will submit',
+    cm_favor: 'Ayrelia\'s Favor', cm_favor_have: 'Favor: {0}', owned_mark: '(owned)',
+
+    rec_ach: 'Achievements', ach_count: 'Unlocked {0} / {1}', rec_stats: 'Statistics',
+    st_time: 'Time played', st_year: 'Current year', st_clicks: 'Coins picked up', st_dragons: 'Dragonlings', st_served: 'Customers served', st_earned: 'Coins earned',
+    st_crafted: 'Kitchen items made', st_harvests: 'Harvests', st_dispatches: 'Expeditions', st_alch: 'Transmutations', st_trades: 'Trades', st_comm: 'Commissions completed',
+    st_parties: 'Tea parties', st_stars: 'Shooting stars observed', st_fed: 'Snacks fed', st_released: 'Dragonlings released', st_insults: 'Times you called Rhasari a stoker bird', st_trips: 'Trips', st_codex: 'Codex',
+    e_windowSlots: 'Window slots {0}',
+    e_windowChance: 'Window sale chance {0}',
+    q_g: 'g',
+    q_s: 's',
+    q_c: 'c',
+    resnote_quill: 'Luan Quills are the hard currency of Dragonest: 1 gold = 12 silver = 144 copper. They come from the shop, the window, display cases and the owl merchant, and pay for mid and late research, expeditions, trips and trade.',
+    lux_note: 'Treasure: +{0}% happiness while in stock; each dragonling plays away {1}/s. Comes from expeditions and trade.',
+    happy_lux: 'Treasures',
+    rate_luxuse: 'Played with by dragonlings',
+    cal_phase: '{0} moon, extra impurity {1}',
+    phase_0: 'Waxing',
+    phase_1: 'Waning',
+    ws_serving: 'Serving',
+    ws_serve_rate: 'Clerks: {0}/s',
+    pay_in: 'Payment',
+    pay_quill: 'Take quills',
+    pay_coins: 'Take coins',
+    pay_d: 'Quills are hard to come by but needed for mid and late research, expeditions, trips and trade. Coins come easily but at a loss: each copper of value only brings {0} coins. When quills are full, coins are taken automatically.',
+    ws_cook_now: 'Cooks are making: {0}',
+    ws_cook_idle: 'The cooks have nothing to do right now.',
+    ws_win: 'Shop Window',
+    ws_win_d: 'Put prepared goods in the window. Each arriving customer has a {0} chance to buy one at its window price. Slots marked "Restock" refill from stock up to 5. Signboards and Window Dressing raise the chance.',
+    win_auto: 'Restock',
+    win_put: 'Put 1',
+    win_put5: 'Put 5',
+    win_empty: 'Empty slot',
+    win_none: 'No prepared goods to display yet.',
+    inv_proc: 'Prepared',
+    inv_proc_d: 'Prepared goods can be processed further into pricier goods, or put in the shop window to sell.',
+    to_window: 'To window',
+    inv_h_wp: 'Window price',
+    trip_quill: 'Quills for the road',
+    plant_hold: 'Hold to sow',
+    plant_hold_d: 'Hold to sow plot by plot according to the plan. Each plot costs its seeds.',
+    farm_gardener: 'Gardeners: {0}',
+    farm_idle: 'The gardeners have nothing to do.',
+    farm_you: 'You: {0}',
+    task_harvest: 'harvesting plot {0}',
+    task_plant: 'sowing plot {0}',
+    task_water: 'watering plot {0} up to {1}',
+    task_fert: 'fertilizing plot {0} up to {1}',
+    hold_hint: 'Keep holding to keep working.',
+    al_moon: 'Moon now: {0}',
+    ex_cost: 'fare {0}',
+    favor_lv: ' (level {0} / {1})',
+    favor_need: 'Requires "{0}" first.',
+    st_quill: 'Quills earned',
+    st_window: 'Window sales',
+    st_arrived: 'Customers arrived',
+    c_hate: 'Disliked months',
+    f_hate: 'Dislikes this month',
+    hate_now: 'dislikes this month',
+    crop_guide_d: 'It is now {0}. Harvests in a month a crop dislikes yield only a quarter; plots sheltered by a greenhouse are unaffected. The current month is highlighted: green means liked, red means disliked.'
+  }
+};
+
+/* 取对象的当前语言文本 */
+function L(o) {
+  if (o == null) return '';
+  if (typeof o !== 'object') return String(o);
+  return o[LANG] != null ? o[LANG] : o.zh;
+}
+
+/* 界面文字：T('key', 参数...) */
+function T(key) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  var d = I18N[LANG];
+  var str = d && d[key] != null ? d[key] : (I18N.zh[key] != null ? I18N.zh[key] : key);
+  return str.replace(/\{(\d+)\}/g, function (m, i) {
+    var a = args[i];
+    if (a == null) return '';
+    if (typeof a === 'object') return L(a);
+    if (typeof a === 'number') return fmt(a);
+    return String(a);
+  });
+}
+
+/* 数字格式：1234 → 1.23K */
+var NUM_UNITS = ['k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx'];
+/* 用来在界面上找出数字后面的单位，把它缩小放在右下角 */
+var NUM_UNIT_RE = /(\d)(k|M|B|T|Qa|Qi|Sx)(?![A-Za-z])/g;
+var NUM_UNIT_TEST = /\d(?:k|M|B|T|Qa|Qi|Sx)(?![A-Za-z])/;
+function fmt(n, dp) {
+  if (n === Infinity) return '∞';
+  if (n == null || isNaN(n)) return '0';
+  var a = Math.abs(n), sign = n < 0 && a >= 0.00005 ? '-' : '';
+  /* 大数字单位：只有位数比单位本身多两位以上时才折叠。
+   * k 代表 4 位数，所以要到 6 位数才折叠：10000 照常显示，100000 显示为 100k；M 要到 9 位数，依此类推。
+   * 折叠后保留到小数点后一位，数值在 1000 以上时只保留整数，一律向下取整 */
+  if (a >= 1e5) {
+    var i = 0;
+    while (i < NUM_UNITS.length - 1 && a >= Math.pow(1000, i + 2) * 100) i++;
+    var m = a / Math.pow(1000, i + 1);
+    var ms = m >= 1000 ? String(Math.floor(m)) : String(Math.floor(m * 10) / 10);
+    return sign + ms + NUM_UNITS[i];
+  }
+  if (dp == null) dp = a > 0 && a < 0.01 ? 4 : a < 10 ? 2 : a < 100 ? 1 : 0;
+  var str = a.toFixed(dp);
+  if (str.indexOf('.') >= 0) str = str.replace(/0+$/, '').replace(/\.$/, '');
+  return sign + str;
+}
+
+/* 翎鸾格式：按铜翎存储，显示为“3金5银7铜”或“3g 5s 7c”。不足 1 铜时保留一位小数 */
+function fmtQuill(c, compact) {
+  if (c === Infinity) return '∞';
+  if (c == null || isNaN(c)) c = 0;
+  var neg = c < 0;
+  c = Math.abs(c);
+  var g = T('q_g'), sv = T('q_s'), cp = T('q_c'), sep = LANG === 'zh' ? '' : ' ';
+  var out;
+  if (c < 1) out = (c > 0 ? c.toFixed(1) : '0') + cp;
+  else {
+    var n = Math.floor(c + 1e-6), G1 = Math.floor(n / 144), S1 = Math.floor((n % 144) / 12), C1 = n % 12, parts = [];
+    /* 紧凑模式（资源栏）：有金翎时不显示铜翎，超过 10 金翎时只显示金翎 */
+    var gMax = compact ? 10 : 1000, cMax = compact ? 1 : 100;
+    if (G1) parts.push((G1 >= 1000 ? fmt(G1) : G1) + g);
+    if (S1 && G1 < gMax) parts.push(S1 + sv);
+    if ((C1 && G1 < cMax) || !parts.length) parts.push(C1 + cp);
+    out = parts.join(sep);
+  }
+  return (neg ? '-' : '') + out;
+}
+/* 资源数量的通用格式：翎鸾用金银铜，其余用普通数字 */
+function fmtAmt(id, v) { return id === 'quill' ? fmtQuill(v) : fmt(v); }
+
+function fmtTime(sec) {
+  if (!isFinite(sec)) return '∞';
+  sec = Math.max(0, Math.round(sec));
+  if (sec < 60) return T('t_s', String(sec));
+  if (sec < 3600) return T('t_m', String(Math.floor(sec / 60)), String(sec % 60));
+  if (sec < 86400) return T('t_h', String(Math.floor(sec / 3600)), String(Math.floor(sec % 3600 / 60)));
+  return T('t_d', String(Math.floor(sec / 86400)), String(Math.floor(sec % 86400 / 3600)));
+}
