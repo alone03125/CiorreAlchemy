@@ -275,22 +275,43 @@ function refundFood(id) {
   for (var k in f.inp) s.res[k] = (s.res[k] || 0) + f.inp[k];
   if (f.flame) s.rhasari.flame += f.flame;
 }
-/* 厨师挑选最缺货的配方：库存低于目标库存且原料齐全 */
+/* v0.4.8 起每位厨师各有一份制作（s.kitchen.tasks，键为小龙 id）。
+ * 厨师离岗、外出或被放生后，做到一半的东西留在灶台上，下一位空闲的厨师会先接手 */
+function cookBusy() {
+  var tasks = G.s.kitchen.tasks || {}, busy = {};
+  for (var k in tasks) if (tasks[k]) busy[tasks[k].id] = (busy[tasks[k].id] || 0) + 1;
+  return busy;
+}
+/* 厨师挑选最缺货的配方：库存低于目标库存且原料齐全。
+ * 别的厨师正在做的份数算进库存；尽量挑别人没在做的，实在没有才和别人做同一样 */
 function cookPick() {
-  var s = G.s, best = null, bestScore = 0;
+  var s = G.s, busy = cookBusy(), best = null, bestScore = -1, bestFree = false;
   var pf = priorityFood();
-  if (pf && canMake(pf.id, 1) && !(pf.flame && s.rhasari.flame < pf.flame)) return pf;
+  if (pf && canMake(pf.id, 1) && !(pf.flame && s.rhasari.flame < pf.flame) &&
+    (s.res[pf.id] || 0) + (busy[pf.id] || 0) < foodTarget(pf.id)) return pf;
   for (var i = 0; i < FOODS.length; i++) {
-    var f = FOODS[i], t = foodTarget(f.id);
+    var f = FOODS[i], t = foodTarget(f.id), n = busy[f.id] || 0;
     if (t <= 0) continue;
-    var stock = s.res[f.id] || 0;
+    var stock = (s.res[f.id] || 0) + n;
     if (stock >= t) continue;
+    if (n && stock + 1 > capOf(f.id) + 1e-9) continue;
     if (!canMake(f.id, 1)) continue;
     if (f.flame && s.rhasari.flame < f.flame + 1) continue;
-    var score = (t - stock) / t + (f.kind === 'proc' ? 0.2 : 0);
-    if (score > bestScore) { bestScore = score; best = f; }
+    var free = n === 0, score = (t - stock) / t + (f.kind === 'proc' ? 0.2 : 0);
+    if ((free && !bestFree) || (free === bestFree && score > bestScore)) { best = f; bestScore = score; bestFree = free; }
   }
   return best;
+}
+/* 界面用：每位厨师与灶台上没人管的半成品 */
+function cookRows() {
+  var s = G.s, tasks = s.kitchen.tasks || {}, rows = [], ids = {};
+  s.dragons.forEach(function (d) {
+    if (d.away || d.job !== 'cook') return;
+    ids[d.id] = true;
+    rows.push({ key: String(d.id), dragon: d });
+  });
+  for (var k in tasks) if (tasks[k] && !ids[k]) rows.push({ key: k, dragon: null });
+  return rows;
 }
 /* 对一份制作投入 w 份工作量（按工位速度折算），返回用掉的工作量 */
 function cookApply(task, w) {
@@ -301,20 +322,38 @@ function cookApply(task, w) {
   return use;
 }
 function kitchenTick(dt) {
-  var s = G.s;
+  var s = G.s, K = s.kitchen;
   if (!s.bld.workshop) return;
-  if (s.kitchen.priority) checkPriorityDone();
-  var w = workForce('cook') * COOK_SPEED * dt, guard = 0;
-  if (w <= 0) return;
-  while (w > 1e-9 && guard++ < 30) {
-    if (!s.kitchen.task) {
-      var f = cookPick();
-      if (!f || !startFood(f.id)) break;
-      s.kitchen.task = { id: f.id, prog: 0 };
+  if (K.priority) checkPriorityDone();
+  if (!K.tasks) K.tasks = {};
+  /* 旧存档里只有一份大家共用的制作：先放到灶台上，由第一位空闲的厨师接手 */
+  if (K.task) { if (!K.task.done) K.tasks.old = K.task; K.task = null; }
+  var cooks = s.dragons.filter(function (d) { return !d.away && d.job === 'cook'; });
+  if (!cooks.length) return;
+  var ids = {};
+  cooks.forEach(function (d) { ids[d.id] = true; });
+  var orphans = Object.keys(K.tasks).filter(function (k) { return K.tasks[k] && !ids[k]; });
+  cooks.forEach(function (d) {
+    if (K.tasks[d.id] || !orphans.length) return;
+    var k = orphans.shift();
+    K.tasks[d.id] = K.tasks[k];
+    delete K.tasks[k];
+  });
+  /* 每位厨师按自己的效率推进自己的进度条，总量与 workForce('cook') 相同 */
+  var mult = happyFactor() * (1 + eff('job.cook')) * COOK_SPEED * dt;
+  cooks.forEach(function (d) {
+    var w = dragonEff(d, 'cook') * mult, guard = 0;
+    while (w > 1e-9 && guard++ < 30) {
+      var t = K.tasks[d.id];
+      if (!t) {
+        var f = cookPick();
+        if (!f || !startFood(f.id)) break;
+        t = K.tasks[d.id] = { id: f.id, prog: 0 };
+      }
+      w -= cookApply(t, w);
+      if (t.done) delete K.tasks[d.id];
     }
-    w -= cookApply(s.kitchen.task, w);
-    if (s.kitchen.task.done) s.kitchen.task = null;
-  }
+  });
 }
 /* 按住某一行的“制作”：亲自动手做这一样 */
 function canManualCook(id) {

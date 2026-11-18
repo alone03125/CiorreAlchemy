@@ -40,7 +40,7 @@ LUXURIES.forEach(function (l) {
  * best 为最佳月份（收获 +25%），closed 为不营业的月份（不能出发）。unlockDest 为解锁该伙伴所需的派遣地点之一。 */
 var TRADE_PARTNERS = [
   { id: 'owls', zh: '猫头鹰王国', en: 'Vohrkthal', color: '#8a6d3b',
-    wants: { kind: 'dessert' }, cost: { quill: 576 }, days: 80, el: ['e', 'p'],
+    wants: { kind: 'dessert' }, cost: { quill: 576, intel: 100 }, days: 80, el: ['e', 'p'],
     gives: [
       { res: 'lore', min: 300, max: 700 },
       { res: 'honey', min: 5, max: 15, ch: 0.6 },
@@ -54,7 +54,7 @@ var TRADE_PARTNERS = [
     best: [4], closed: [],
     desc: { zh: '东边的猫头鹰们爱读书、爱讲价，更爱甜品。用学识和香草种子换你的点心。', en: 'The owls to the east love books, haggling and, above all, desserts. They pay in lore and vanilla seeds.' } },
   { id: 'ember', zh: '烬翼氏族', en: 'Emberthrone Ascendancy', color: '#c8501e', unlockDest: ['noctflame', 'ardorhine'],
-    wants: { kind: 'drink' }, cost: { quill: 576 }, days: 60, el: ['s'],
+    wants: { kind: 'drink' }, cost: { quill: 576, intel: 100 }, days: 60, el: ['s'],
     gives: [
       { crystal: 's', min: 1, max: 3 },
       { res: 'ore', min: 150, max: 400 },
@@ -67,7 +67,7 @@ var TRADE_PARTNERS = [
     best: [6], closed: [11],
     desc: { zh: '南方火山脚下的氏族，住得太热，所以什么饮料都要。永霜月冬眠不营业。', en: 'A clan at the foot of southern volcanoes. It is so hot there they will take any drink. Closed in Brucemar for hibernation.' } },
   { id: 'frost', zh: '霜息氏族', en: 'Frostshroud Covenent', color: '#3a8fc4', unlockDest: ['abysweald', 'frostfang'],
-    wants: { kind: 'drink' }, cost: { quill: 576 }, days: 60, el: ['f', 'd'],
+    wants: { kind: 'drink' }, cost: { quill: 576, intel: 100 }, days: 60, el: ['f', 'd'],
     gives: [
       { crystal: 'f', min: 1, max: 3 },
       { res: 'firewood', min: 100, max: 250 },
@@ -80,7 +80,7 @@ var TRADE_PARTNERS = [
     best: [11], closed: [6],
     desc: { zh: '北方永霜冻土的氏族，最想要热饮。龙焰月太热，他们不下山。', en: 'The clan of the northern Everfrost, desperate for hot drinks. In Ignust it is too hot for them to come down.' } },
   { id: 'thorn', zh: '棘语氏族', en: 'Thornspire Conklave', color: '#3f8f3f', unlockDest: ['lunavite', 'monifern'],
-    wants: { kind: 'dessert' }, cost: { quill: 576 }, days: 50, el: ['p', 't'],
+    wants: { kind: 'dessert' }, cost: { quill: 576, intel: 100 }, days: 50, el: ['p', 't'],
     gives: [
       { res: 'tea', min: 5, max: 15, ch: 0.7 },
       { res: 'strawberry', min: 5, max: 15, ch: 0.5 },
@@ -94,7 +94,7 @@ var TRADE_PARTNERS = [
     best: [9], closed: [],
     desc: { zh: '东南林地的氏族，说话带刺，心很软。用茶叶、草莓和可可种子换甜品。', en: 'The south-eastern woodland clan. Thorny words, soft hearts. They trade tea, strawberries and cocoa seeds for desserts.' } },
   { id: 'necro', zh: '冥骸氏族', en: 'Necroclave Syndicate', color: '#7a4a9c', unlockDest: ['vacuumyth', 'crimtwlit'],
-    wants: { kind: 'any' }, cost: { quill: 576 }, days: 70, el: ['c', 'e'],
+    wants: { kind: 'any' }, cost: { quill: 576, intel: 100 }, days: 70, el: ['c', 'e'],
     gives: [
       { crystal: 'c', min: 1, max: 2 },
       { crystal: 'e', min: 1, max: 2 },

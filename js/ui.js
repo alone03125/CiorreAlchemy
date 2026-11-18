@@ -213,11 +213,11 @@ function costHtml(cost) {
 }
 const EFF_KIND = {
   housing: 'n', custRate: 'n', custMult: 'p', queueCap: 'n', windowSlots: 'n', windowChance: 'p', marketLux: 'n', dispSlots: 'n', dispSpeed: 'p', dispLoot: 'p',
-  dispTypes: 'n', itemValue: 'p', alchFloor: 'pa', alchFail: 'pa', flameMax: 'n', flameRegen: 'p',
+  dispTypes: 'n', itemValue: 'p', alchFloor: 'pa', alchGap: 'n', alchFail: 'pa', flameMax: 'n', flameRegen: 'p',
   displaySlots: 'n', displayChance: 'p', trainXp: 'r', growth: 'p', buildCost: 'p', rakuIntel: 'p',
   commReward: 'p', commSlots: 'n', noInjury: 'x', showMult: 'p', upkeepRelief: 'pa', crowdRelief: 'pa',
   happiness: 'n', priceAll: 'p', skillXP: 'r', farmGrowth: 'p', cropYield: 'p', waterRegen: 'n',
-  greenhouse: 'n', tradeRatio: 'p', starChance: 'pr', kitchenSpeed: 'p'
+  greenhouse: 'n', tradeRatio: 'p', starChance: 'pr', kitchenSpeed: 'p', capMultBasic: 'p'
 };
 function effText(k, v) {
   const p = k.split('.');

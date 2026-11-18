@@ -245,9 +245,21 @@ function buildWorkshop(el) {
     el.appendChild(section(T('ws_menu')));
     el.appendChild(note(T('ws_menu_d')));
     el.appendChild(liveText('div', () => T('ws_cooks', fmt(workForce('cook') * COOK_SPEED, 2)), 'line dim'));
-    el.appendChild(h('div', { class: 'stat-row' },
-      liveText('span', () => s.kitchen.task ? T('ws_cook_now', L(FOOD_MAP[s.kitchen.task.id])) : T('ws_cook_idle'), 'stat-l wide'),
-      bar(() => s.kitchen.task ? s.kitchen.task.prog : 0, 'cook')));
+    /* 每位厨师一行，各自的进度条；灶台上没人管的半成品也列出来 */
+    el.appendChild(region(() => cookRows().map(x => x.key).join(',') + '|' + LANG, r => {
+      const rows = cookRows();
+      if (!rows.length) { r.appendChild(note(T('ws_cook_none'))); return; }
+      rows.forEach(x => {
+        const task = () => (s.kitchen.tasks || {})[x.key];
+        r.appendChild(h('div', { class: 'stat-row' },
+          liveText('span', () => {
+            const t = task();
+            if (!x.dragon) return t ? T('ws_cook_wait', L(FOOD_MAP[t.id])) : '';
+            return t ? T('ws_cook_now', x.dragon.name, L(FOOD_MAP[t.id])) : T('ws_cook_idle', x.dragon.name);
+          }, 'stat-l wide'),
+          bar(() => { const t = task(); return t ? t.prog : 0; }, 'cook')));
+      });
+    }));
     el.appendChild(region(() => s.ui.menuView, r => {
       const mv = h('div', { class: 'filters' });
       [['goods', T('menu_goods')], ['proc', T('menu_proc')], ['stations', T('menu_stations')]].forEach(([id, lab], i) => {
@@ -524,7 +536,7 @@ function buildExpedition(el) {
     if (!dests.find(d => d.id === s.disp.selDest)) s.disp.selDest = dests.length ? dests[0].id : null;
     if (!home.length) { r.appendChild(note(T('ex_no_dragon'))); return; }
     const selD = select(home.map(d => [d.id, d.name + '  ' + L(ELEMENTS[d.el]) + '  ' + T('cl_short') + ' ' + d.cl + '  ' + (d.job ? L(JOB_MAP[d.job]) : T('idle'))]), () => s.disp.selDragon, v => { s.disp.selDragon = +v; });
-    const selT = select(dests.map(d => [d.id, L(d) + '  ' + T('rec_cl', d.rec) + '  ' + T('n_days', d.days) + '  ' + T('ex_cost', fmtQuill(destCost(d)))]), () => s.disp.selDest, v => { s.disp.selDest = v; });
+    const selT = select(dests.map(d => [d.id, L(d) + '  ' + T('rec_cl', d.rec) + '  ' + T('n_days', d.days) + '  ' + T('ex_cost', fmtQuill(destCost(d)) + (destIntel(d) ? T('list_sep') + T('intel_n', destIntel(d)) : ''))]), () => s.disp.selDest, v => { s.disp.selDest = v; });
     r.appendChild(h('div', { class: 'form-row' }, h('span', { class: 'fl', text: T('ex_dragon') }), selD));
     r.appendChild(h('div', { class: 'form-row' }, h('span', { class: 'fl', text: T('ex_dest') }), selT));
     r.appendChild(liveText('div', () => {
@@ -535,7 +547,8 @@ function buildExpedition(el) {
     }, 'note'));
     const g = h('div', { class: 'grid' });
     g.appendChild(button({ label: T('ex_go'), click: () => dispatch(s.disp.selDragon, s.disp.selDest), enabled: () => canDispatch(s.disp.selDragon, s.disp.selDest),
-      tip: () => tipSimple(T('ex_go'), T('ex_go_d')) + (DEST_MAP[s.disp.selDest] ? '<div class="tt-sep"></div>' + costRow(L(RES_MAP.quill), s.res.quill, destCost(DEST_MAP[s.disp.selDest]), 'quill') : '') }));
+      tip: () => tipSimple(T('ex_go'), T('ex_go_d')) + (DEST_MAP[s.disp.selDest] ? '<div class="tt-sep"></div>' + costRow(L(RES_MAP.quill), s.res.quill, destCost(DEST_MAP[s.disp.selDest]), 'quill') +
+        (destIntel(DEST_MAP[s.disp.selDest]) ? costRow(L(RES_MAP.intel), s.res.intel, destIntel(DEST_MAP[s.disp.selDest]), 'intel') : '') : '') }));
     r.appendChild(g);
   }));
   el.appendChild(region(() => s.disp.active.map(a => a.dragon).join(','), r => {
@@ -599,7 +612,7 @@ function buildAlchemy(el) {
     if (!l || (UI.alchAnim && !UI.alchAnim.done)) return '';
     if (l.failed && l.intended) return T('al_almost', L(ITEMS[l.intended]));
     if (l.recipe) return T('al_by_recipe');
-    return l.lv ? T('al_rolled', l.lv) : '';
+    return l.lv ? T('al_rolled', l.lv) + (l.swayed && ELEMENTS[l.swayed] ? T('al_swayed', L(ELEMENTS[l.swayed])) : '') : '';
   }, 'line dim center'));
   el.appendChild(section(T('al_materials')));
   const filt = h('input', { class: 'inp', type: 'text', placeholder: T('search') });
@@ -666,7 +679,7 @@ function buildTrade(el) {
         (p.closed.length ? T('list_sep') + T('trade_closed_m', p.closed.map(m => L(MONTHS[m])).join(T('list_sep'))) : '')));
       card.appendChild(h('div', { class: 'stat-row', tip: () => tipSimple(T('relation'), T('relation_d')) }, h('span', { class: 'stat-l', text: T('relation') }), bar(() => (s.trade.rel[p.id] || 0) / 100),
         liveText('span', () => Math.round(s.trade.rel[p.id] || 0) + '  ' + T('trade_mult', pct(tradeMult(p) - 1)), 'stat-v')));
-      card.appendChild(h('div', { class: 'line' }, T('tr_wants', T('kind_' + p.wants.kind), p.days, fmtQuill(p.cost.quill)),
+      card.appendChild(h('div', { class: 'line' }, T('tr_wants', T('kind_' + p.wants.kind), p.days, fmtQuill(p.cost.quill) + (p.cost.intel ? T('list_sep') + T('intel_n', p.cost.intel) : '')),
         h('span', { class: 'dim small', text: '  ' + T('tr_likes', p.el.map(e => L(ELEMENTS[e])).join(T('list_sep'))) })));
       card.appendChild(h('div', { class: 'line small dim' }, T('trade_gives') + p.gives.map(gv => {
         if (gv.seed) return T('seed_of', L(CROP_MAP[gv.seed])) + (cropKnown(CROP_MAP[gv.seed], s) ? T('got_mark') : '');

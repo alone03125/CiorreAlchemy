@@ -1,7 +1,7 @@
 /* 核心：状态、效果汇总、幸福度、产出计算、时间推进、存档、日志与通用工具 */
 
 var G = {
-  version: '0.4.7',
+  version: '0.4.11',
   s: null,          // 当前存档状态
   E: {},            // 当前生效的效果汇总
   happy: 100,       // 幸福度（百分数）
@@ -65,7 +65,7 @@ function newState() {
     dragons: [], nextDragonId: 1, dragonProg: 0, starve: 0, leader: null,
     shop: { queue: 0, serveProg: 0, display: [], window: [], lost: 0, noStock: 0, snack: true, showCount: 0,
       demand: {}, sale: {}, staffSnack: {}, autoRefine: false, payIn: 'quill' },
-    kitchen: { targets: {}, task: null, manual: null, priority: null },
+    kitchen: { targets: {}, task: null, tasks: {}, manual: null, priority: null },
     farm: { plots: [], known: {}, autoFert: true, task: null, manual: null },
     luxSeen: {}, luxHave: {},
     market: { prog: 0, last: [] },
@@ -78,7 +78,7 @@ function newState() {
     trade: { count: {}, rel: {}, unlocked: {}, caravans: [] },
     disp: { unlocked: { lunavite: true }, active: [], history: [], selDest: 'lunavite', selDragon: null },
     comm: { qkey: -1, list: [], letter: 0, ups: {}, plumeBuys: 0, everGot: false, done: 0 },
-    alch: { slots: [], guard: false, last: null },
+    alch: { slots: [], guard: false, last: null, heat: 50 },
     queue: [],
     ach: {},
     stats: { served: 0, alch: 0, caramel: 0, dispDone: {}, clicks: 0, dispatches: 0, harvests: 0, insults: 0,
@@ -165,7 +165,11 @@ function workForce(jobId) { return jobEff(jobId) * happyFactor() * (1 + eff('job
 function computeEffects() {
   var s = G.s, E = {};
   function add(obj, mult) {
-    for (var k in obj) E[k] = (E[k] || 0) + obj[k] * mult;
+    for (var k in obj) {
+      /* 取最小值的效果：例如 alchGap，稳定火候 15 与恒温炉心 10 同时拥有时取 10，而不是相加 */
+      if (EFF_MIN[k]) E[k] = E[k] == null ? obj[k] : Math.min(E[k], obj[k]);
+      else E[k] = (E[k] || 0) + obj[k] * mult;
+    }
   }
   BUILDINGS.forEach(function (b) {
     var n = s.bld[b.id];
@@ -233,6 +237,8 @@ function capOf(id) {
   if (r.group === 'goods') c += eff('cap.goods');
   if (r.group === 'processed') c += eff('cap.processed');
   if (r.group === 'ingredient') c += eff('cap.ingredient');
+  /* 琥珀枝：基础资源的上限在所有加成之后再乘一次 */
+  if (r.group === 'basic') c *= 1 + eff('capMultBasic');
   return c;
 }
 function upkeepRate() { return DRAGON_UPKEEP * Math.max(0.25, 1 - eff('upkeepRelief')); }

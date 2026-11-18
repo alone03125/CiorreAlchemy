@@ -680,11 +680,14 @@ function dispSpeed() { return Math.max(0.2, 1 + eff('dispSpeed')); }
 function homeDragons() { return G.s.dragons.filter(function (d) { return !d.away; }); }
 /* 派遣的路费（铜翎） */
 function destCost(dest) { return DEST_COST[dest.tier] || 0; }
+/* v0.4.11：每次派遣还要花情报，按地点不同（DESTS 的 dispIntel） */
+function destIntel(dest) { return (dest && dest.dispIntel) || 0; }
 function canDispatch(dragonId, destId) {
   var s = G.s;
   if (s.disp.active.length >= dispSlots()) return false;
   if (!s.disp.unlocked[destId]) return false;
   if (s.res.quill < destCost(DEST_MAP[destId]) - 1e-9) return false;
+  if (s.res.intel < destIntel(DEST_MAP[destId]) - 1e-9) return false;
   var d = s.dragons.find(function (x) { return x.id === dragonId; });
   return !!d && !d.away;
 }
@@ -694,6 +697,7 @@ function dispatch(dragonId, destId) {
   var d = s.dragons.find(function (x) { return x.id === dragonId; });
   var dest = DEST_MAP[destId];
   addRes('quill', -destCost(dest));
+  addRes('intel', -destIntel(dest));
   d.away = true;
   s.disp.active.push({ dragon: d.id, dest: destId, left: dest.days, total: dest.days });
   s.stats.dispatches++;
@@ -835,19 +839,78 @@ function finishDispatch(a) {
 /* v0.4.1：炼金点数改为立方。每件材料提供“等级的立方 × 稀有度倍率”点，
  * 产物的最高等级为总点数的立方根，所以 50 级产物需要 125000 点，十几级的材料再多也凑不出来 */
 function itemPoints(id) { var it = ITEMS[id]; return Math.pow(it.lv, 3) * RARITY.points[it.r]; }
-function alchPoints(ids) {
+/* 材料本身的点数，不含加成 */
+function alchRawPoints(ids) {
   return ids.reduce(function (a, id) { return a + itemPoints(id); }, 0);
+}
+/* 火力：s.alch.heat 为 0 到 100，50 为中火。heatT 为 -1（最小）到 1（最大） */
+function heatLevel() { var v = G.s.alch.heat; return v == null ? 50 : clamp(+v || 0, 0, 100); }
+function heatT() { return (heatLevel() - 50) / 50; }
+function heatMod(key) { var t = heatT(); return t < 0 ? HEAT_LOW[key] * -t : HEAT_HIGH[key] * t; }
+function heatMinShift() { return Math.round(heatMod('minLv')); }
+function setHeat(v) { G.s.alch.heat = clamp(Math.round(+v || 0), 0, 100); }
+/* 每种元素各有几件材料（不算无元素） */
+function alchElCounts(ids) {
+  var c = {};
+  ids.forEach(function (id) { var e = ITEMS[id].el; if (e && e !== 'n') c[e] = (c[e] || 0) + 1; });
+  return c;
+}
+/* v0.4.8 的点数加成：同元素、多类别与火力，三者加算。
+ * dom 为放得最多的元素（至少 3 件，并列时可能有两种），sway 为产物不是这种元素时改投的概率。
+ * v0.4.9：无属性材料算作放得最多的元素，一起计算同元素加成与改投概率；
+ * 但这种元素自己不足 3 件、或有两种元素并列最多时，无属性材料不算 */
+function alchBonus(ids) {
+  var c = alchElCounts(ids), el = 0, top = 0, dom = [], groups = [], k;
+  var neutral = ids.filter(function (id) { var e = ITEMS[id].el; return !e || e === 'n'; }).length;
+  for (k in c) {
+    if (c[k] > top) { top = c[k]; dom = [k]; } else if (c[k] === top) dom.push(k);
+  }
+  if (top < 3) dom = [];
+  var joined = dom.length === 1 ? neutral : 0;
+  for (k in c) {
+    var nk = c[k] + (joined && k === dom[0] ? joined : 0);
+    if (nk < 3) continue;
+    var bk = ALCH_EL_BONUS[Math.min(nk, 7) - 3];
+    el += bk;
+    groups.push({ el: k, n: nk, neutral: joined && k === dom[0] ? joined : 0, b: bk });
+  }
+  top += joined;
+  var cats = {};
+  ids.forEach(function (id) { cats[ITEMS[id].cat] = true; });
+  var nc = Object.keys(cats).length, cat = nc >= 3 ? ALCH_CAT_BONUS[Math.min(nc, 7) - 3] : 0;
+  var heat = ids.length ? heatMod('points') : 0;
+  return { el: el, groups: groups, cat: cat, cats: nc, heat: heat, total: el + cat + heat,
+    dom: dom, top: top, sway: dom.length ? ALCH_EL_SWAY[Math.min(top, 7) - 3] : 0 };
+}
+function alchPoints(ids) {
+  return alchRawPoints(ids) * Math.max(0, 1 + alchBonus(ids).total);
 }
 function levelPoints(lv) { return Math.pow(lv, 3); }
 function alchRange(ids) {
   var p = alchPoints(ids);
   var max = clamp(Math.floor(Math.cbrt(p) + 1e-9), 1, 50);
+  /* 产物的最低等级先取材料里等级最低的那件 */
+  var min = ids.length ? Math.min.apply(null, ids.map(function (id) { return ITEMS[id].lv; })) : 1;
+  /* 火力：小火提高最低等级，大火降低最低等级 */
+  if (ids.length) min += heatMinShift();
+  /* v0.4.11：研究只是兜底的下限，放在火力之后，不会改变火力算出来的数。
+   * 稳定火候与恒温炉心：最低等级不会低于最高等级以下 alchGap 级（取两者中较小的差距） */
   var fl = Math.min(0.6, eff('alchFloor'));
-  var min = Math.max(1, Math.ceil(max * fl));
-  /* 产物的最低等级不会低于材料里等级最低的那件 */
-  /* 下限不会高于点数决定的上限：点数不够时，产物照样只能到上限 */
-  if (ids.length) min = Math.max(min, Math.min.apply(null, ids.map(function (id) { return ITEMS[id].lv; })));
-  return { p: p, max: max, min: Math.min(min, max) };
+  if (fl > 0) min = Math.max(min, Math.ceil(max * fl));
+  var gap = eff('alchGap');
+  if (gap > 0) min = Math.max(min, max - gap);
+  /* 下限不会高于点数决定的上限，也不会低于 1 */
+  return { p: p, max: max, min: clamp(min, 1, max) };
+}
+/* 同元素改投：在 from 到 to 级之间，找属于 els 这些元素的普通产物。先等概率挑一个有这种产物的等级，再按稀有度权重挑 */
+function swayPick(els, from, to) {
+  var levels = [];
+  for (var l = from; l <= to; l++) {
+    var pool = (PRODUCTS_BY_LEVEL[l] || []).filter(function (x) { return els.indexOf(x.el) >= 0; });
+    if (pool.length) levels.push(pool);
+  }
+  if (!levels.length) return null;
+  return wpick(pick(levels).map(function (x) { return [x, RARITY.weight[x.r]]; }));
 }
 function matchRecipe(ids) {
   var c = tally(ids);
@@ -860,10 +923,12 @@ function matchRecipe(ids) {
   return null;
 }
 function alchCost(ids) { return { firewood: 5 * ids.length }; }
-/* 失败率：稀有度决定基础值，研究按比例降低，再加上月相的额外杂质概率。Rare 5 与 Rare 6 永不失败 */
+/* 失败率：稀有度决定基础值，研究按比例降低，再加上月相与火力（都是直接加减）。
+ * Rare 5 与 Rare 6 平时不会失败，只有火力调到中火以上时才会，失败率就是火力那一部分 */
 function failChance(r, guard) {
-  if (RARITY.fail[r] <= 0) return 0;
-  var f = RARITY.fail[r] * Math.max(0, 1 - eff('alchFail')) + phaseMod();
+  var hf = heatMod('fail'), f;
+  if (RARITY.fail[r] <= 0) f = Math.max(0, hf);
+  else f = RARITY.fail[r] * Math.max(0, 1 - eff('alchFail')) + phaseMod() + hf;
   return clamp(f, 0, 0.9) * (guard ? 0.5 : 1);
 }
 function alchMissing() {
@@ -896,24 +961,30 @@ function transmute(defer) {
   spendCost(alchCost(ids));
   if (guard) s.rhasari.flame -= 2;
   ids.forEach(function (id) { removeItem(id, 1); });
-  var recipe = matchRecipe(ids), out, failed = false, intended = null, lv = null;
+  var recipe = matchRecipe(ids), out, failed = false, intended = null, lv = null, swayed = null;
   if (recipe) {
     out = recipe.out;
     s.recipes[recipe.id] = true;
   } else {
-    var rg = alchRange(ids);
+    var rg = alchRange(ids), bo = alchBonus(ids);
     lv = randInt(rg.min, rg.max);
     var pool = PRODUCTS_BY_LEVEL[lv];
     var it = wpick(pool.map(function (x) { return [x, RARITY.weight[x.r]]; }));
+    /* 同元素材料放了 3 件以上，而产物不是这种元素：有一定概率改投这种元素，等级不低于原来，不高于上限 */
+    if (bo.dom.length && bo.dom.indexOf(it.el) < 0 && Math.random() < bo.sway) {
+      var alt = swayPick(bo.dom, lv, rg.max);
+      if (alt) { it = alt; lv = alt.lv; swayed = alt.el; }
+    }
     intended = it.id;
     if (Math.random() < failChance(it.r, guard)) { out = 'impurity'; failed = true; }
     else out = it.id;
   }
   addItem(out, 1);
   s.stats.alch++;
-  s.alch.last = { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv };
+  s.alch.last = { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv, swayed: swayed };
   var flush = function () {
     if (guard) logC('alch', TXT.rhasari.guard);
+    if (swayed) logC('alch', TXT.alch.sway, ELEMENTS[swayed]);
     if (recipe) logC('alch', TXT.alch.recipe, itemPair(out));
     else if (failed) logC('alch', TXT.alch.fail, itemPair(intended));
     else logC('alch', TXT.alch.ok, itemPair(out));
@@ -925,7 +996,7 @@ function transmute(defer) {
     if ((s.inv[id] || 0) >= c[id]) keep.push(id);
   });
   s.alch.slots = keep;
-  return { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv, flush: defer ? flush : function () {} };
+  return { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv, swayed: swayed, flush: defer ? flush : function () {} };
 }
 
 /* ========== 委托（Ayrelia） ========== */

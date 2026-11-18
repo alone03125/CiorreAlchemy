@@ -169,7 +169,8 @@ var TXT = {
   alch: {
     ok: { zh: '炼金完成：{0}。', en: 'Transmutation complete: {0}.' },
     fail: { zh: '炉子里冒出一股可疑的黑烟……得到了杂质。差一点就是 {0} 了。', en: 'A suspicious puff of black smoke rises from the furnace... you got an Impurity. It almost became {0}.' },
-    recipe: { zh: '固定配方生效！得到了 {0}。', en: 'A fixed recipe takes effect! You got {0}.' }
+    recipe: { zh: '固定配方生效！得到了 {0}。', en: 'A fixed recipe takes effect! You got {0}.' },
+    sway: { zh: '炉膛里的{0}气息占了上风，产物被拽向了同一种元素。', en: 'The {0} essence in the furnace wins out and drags the product toward the same element.' }
   },
 
   shop: {

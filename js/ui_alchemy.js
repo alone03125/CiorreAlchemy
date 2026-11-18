@@ -136,9 +136,95 @@ function buildHepta() {
     core.style.setProperty('--gl', cls === 'done' ? '10px' : '0px');
     core.className = 'hcore ' + cls;
   });
-  box.appendChild(wrap);
+  box.appendChild(h('div', { class: 'hepta-row' }, wrap, buildHeat()));
   box.appendChild(buildAlchGauge());
   return box;
+}
+
+/* 七芒星右侧竖着的火力滑块：0 为文火，50 为中火，100 为武火。拖动、方向键调整，双击回到中火 */
+const HEAT_COLORS = ['#3a8fc4', '#c98a2b', '#d2391e'];
+function mixHex(a, b, t) {
+  const pa = [1, 3, 5].map(i => parseInt(a.substr(i, 2), 16)), pb = [1, 3, 5].map(i => parseInt(b.substr(i, 2), 16));
+  return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+}
+function heatColor(v) { return v <= 50 ? mixHex(HEAT_COLORS[0], HEAT_COLORS[1], v / 50) : mixHex(HEAT_COLORS[1], HEAT_COLORS[2], (v - 50) / 50); }
+function heatName(v) { return v === 50 ? T('heat_mid') : String(v); }
+function heatTip() {
+  const v = heatLevel(), m = heatMinShift(), f = heatMod('fail');
+  return tipSimple(T('heat') + ' ' + v, T('heat_d')) + '<div class="tt-sep"></div>' +
+    ttRow(T('heat_pts'), pct(heatMod('points'))) +
+    ttRow(T('heat_min'), (m > 0 ? '+' : '') + m) +
+    ttRow(T('heat_fail'), (f > 0 ? '+' : f < 0 ? '-' : '') + pctAbs(f));
+}
+function buildHeat() {
+  const track = h('div', { class: 'heat-track', role: 'slider', tabindex: '0', 'aria-orientation': 'vertical',
+    'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-label': T('heat') });
+  const fill = h('div', { class: 'heat-fill' }), thumb = h('div', { class: 'heat-thumb' });
+  track.appendChild(fill);
+  track.appendChild(h('div', { class: 'heat-mid' }));
+  track.appendChild(thumb);
+  const val = h('div', { class: 'heat-v' });
+  const box = h('div', { class: 'heat', tip: heatTip },
+    h('div', { class: 'heat-l', text: T('heat_hi') }), track, h('div', { class: 'heat-l', text: T('heat_lo') }), val);
+  const setFromY = y => {
+    const rc = track.getBoundingClientRect();
+    let v = (rc.bottom - y) / rc.height * 100;
+    if (Math.abs(v - 50) < 3) v = 50;   // 中火附近吸附一下，方便拨回不调整的位置
+    setHeat(clamp(v, 0, 100));
+    UI.refreshAll();
+  };
+  let drag = false;
+  track.addEventListener('pointerdown', e => {
+    drag = true;
+    track.setPointerCapture(e.pointerId);
+    track.focus();
+    setFromY(e.clientY);
+    e.preventDefault();
+  });
+  track.addEventListener('pointermove', e => { if (drag) setFromY(e.clientY); });
+  track.addEventListener('pointerup', () => { drag = false; });
+  track.addEventListener('pointercancel', () => { drag = false; });
+  track.addEventListener('dblclick', () => { setHeat(50); UI.refreshAll(); });
+  track.addEventListener('keydown', e => {
+    const v = heatLevel(), st = e.shiftKey ? 10 : 1;
+    const to = { ArrowUp: v + st, ArrowRight: v + st, ArrowDown: v - st, ArrowLeft: v - st, PageUp: v + 10, PageDown: v - 10, Home: 0, End: 100 }[e.key];
+    if (to == null) return;
+    e.preventDefault();
+    setHeat(to);
+    UI.refreshAll();
+  });
+  let last = null;
+  onUpdate(() => {
+    const v = heatLevel(), key = v + '|' + LANG;
+    if (key === last) return;
+    last = key;
+    const c = heatColor(v);
+    thumb.style.bottom = v + '%';
+    thumb.style.setProperty('--hc', c);
+    thumb.style.setProperty('--hg', (3 + Math.abs(v - 50) / 4).toFixed(0) + 'px');
+    /* 从中间往滑块位置涂一段颜色，看得出偏向哪一边 */
+    fill.style.bottom = Math.min(v, 50) + '%';
+    fill.style.height = Math.abs(v - 50) + '%';
+    fill.style.background = c;
+    track.setAttribute('aria-valuenow', String(v));
+    track.setAttribute('aria-valuetext', T('heat') + ' ' + heatName(v));
+    val.textContent = heatName(v);
+    val.style.color = v === 50 ? '' : c;
+  });
+  return box;
+}
+
+/* 能量条下方的加成说明：同元素、多类别、火力，以及同元素改投的概率 */
+function alchBonusText(ids) {
+  if (!ids.length || matchRecipe(ids)) return '';
+  const b = alchBonus(ids), parts = [], out = [];
+  b.groups.forEach(g => parts.push(g.neutral ? T('ab_el_n', L(ELEMENTS[g.el]), g.n, g.neutral, pct(g.b)) : T('ab_el', L(ELEMENTS[g.el]), g.n, pct(g.b))));
+  if (b.cat) parts.push(T('ab_cat', b.cats, pct(b.cat)));
+  if (b.heat) parts.push(T('ab_heat', pct(b.heat)));
+  if (parts.length) out.push(T('ab_head') + parts.join(T('list_sep')) + (parts.length > 1 ? T('list_sep') + T('ab_total', pct(b.total)) : ''));
+  if (b.dom.length) out.push(T('ab_sway', b.dom.map(e => L(ELEMENTS[e])).join(T('or')), pctAbs(b.sway)));
+  if (!out.length) return '';
+  return out.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(T('ab_gap')) + T('ab_gap').trim();
 }
 
 /* 炼金点数的能量条：长度按“点数的立方根 / 50”，刻度是各个等级区间的分界；
@@ -154,16 +240,18 @@ function buildAlchGauge() {
     barEl.appendChild(h('span', { class: 'ag-tick', style: 'left:' + (lv / 50 * 100) + '%' }));
     barEl.appendChild(h('span', { class: 'ag-tl', style: 'left:' + (lv / 50 * 100) + '%', text: String(lv) }));
   });
-  const sub = h('div', { class: 'ag-sub' });
+  const sub = h('div', { class: 'ag-sub' }), bon = h('div', { class: 'ag-bonus' });
   g.appendChild(head);
   g.appendChild(barEl);
   g.appendChild(sub);
-  let shown = 0, lastP = null, lastSub = null;
+  g.appendChild(bon);
+  let shown = 0, lastP = null, lastSub = null, lastBon = null, lastHeat = heatLevel();
   onUpdate(() => {
-    const ids = s.alch.slots, en = alchEnergy(ids);
+    const ids = s.alch.slots, en = alchEnergy(ids), hv = heatLevel();
     if (lastP === null) { shown = en.p; lastP = en.p; }
     if (en.p !== lastP) {
-      if (en.p > lastP + 0.5) {
+      /* 只是拨了火力时不飘数字，免得拖动滑块时数字刷屏 */
+      if (en.p > lastP + 0.5 && hv === lastHeat) {
         const d = h('span', { class: 'ag-delta', text: '+' + fmt(en.p - lastP, 0) });
         head.appendChild(d);
         setTimeout(() => d.remove(), 1200);
@@ -191,6 +279,9 @@ function buildAlchGauge() {
       }
     }
     if (st !== lastSub) { lastSub = st; sub.textContent = st; }
+    lastHeat = hv;
+    const bt = alchBonusText(ids);
+    if (bt !== lastBon) { lastBon = bt; bon.textContent = bt; }
   });
   return g;
 }
@@ -281,6 +372,8 @@ function finishAlchAnim() {
       H.core.className = 'hcore done';
       retrigger(H.core, 'reveal');
       heptaBurst(H.wrap, color, it.r >= 6 ? 4 : it.r >= 5 ? 3 : 1);
+      /* 同元素改投：迸出一圈这种元素颜色的火花 */
+      if (res.swayed && ELEMENTS[res.swayed]) heptaSparks(H.wrap, ELEMENTS[res.swayed].color, 12, 110);
       if (it.r >= 4 || res.recipe) heptaSparks(H.wrap, color, it.r >= 6 ? 36 : it.r >= 5 ? 22 : 14, it.r >= 6 ? 170 : 120);
       if (it.r >= 6) H.wrap.classList.add('legend');
       else if (it.r >= 5) H.wrap.classList.add('epic');
