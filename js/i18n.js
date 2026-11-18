@@ -109,7 +109,7 @@ var I18N = {
     raku_never: 'Rakuakira 每月初会来一次。', raku_last: '上次来访：{0}，留下情报 {1}，{2}', raku_fed: '吃到了零食。', raku_unfed: '没有吃到零食。',
     lysari_note: 'Rhasari 名义上的姐姐。Rhasari 心情不低于 70 时，她每月初有机会来访，带来礼物和甘霖：当月作物长得更快，地块每天补水。工坊只接待小型龙族，所以她只能趴在窗外。',
     lysari_stat: '来访次数：{0}',
-    ws_display: '展柜', ws_display_d: '每位上门的顾客有 {0} 的概率顺便买走展柜里的一件物品，按全价支付。',
+    ws_display: '展柜', ws_display_d: '每位上门的顾客会看一眼展柜里的某件物品，有 {0} 的概率按全价买走。价值超过 5 金翎的物品更难卖出，越贵越难。',
     each: '每件', take_back: '取回', empty_slot: '空的展柜', put_one: '放入 1 件', put_all: '全部放入',
     ws_trip: '旅行', trip_d: '一有点闲钱，你就想出门。每次旅行会花光全部硬币，还要带上一些翎鸾当路费；十天后带着纪念品、情报和永久的“旅行见闻”回来。',
     trip_stat: '旅行见闻 {0}：硬币产量 {1}，客流 {2}，物品价值 {3}',
@@ -168,7 +168,7 @@ var I18N = {
     sell_one: '卖 1 个（{0}）', sell_all: '全卖', confirm_sell: '确定把 {1} 件 {0} 卖给猫头鹰商人吗？', to_display: '放入展柜',
 
     cm_letter: 'Ayrelia 的来信', cm_left: '本季度还剩 {0} 天。已完成委托 {1} 份。',
-    cm_note: '每季度初 Rakuakira 送来新的委托：起初每季度 1 份，兑换青睐升级后最多 4 份。交付类委托凑齐后点“提交”，东西会被扣除；计数类委托从收到时开始计数，达成后点“领取”。季度结束时，未完成的委托被收回，没有惩罚。研究稳定火候之后，简单的委托会换成交付 1 件指定的 25 级以上炼金产物。',
+    cm_note: '每季度初 Rakuakira 送来新的委托：起初每季度 1 份，兑换青睐升级后最多 4 份。所有委托都是交货：东西凑齐后点“提交”，立即扣除；委托挂起，不再占用委托槽。Rakuakira 下一次来时取走，再下一次来时带回奖励（借出的小龙期满后才带回来）。季度结束时，还没提交的委托被收回，没有惩罚；已经提交的照常完成。解锁自由炼金之后，简单的委托会换成交付 1 件指定的 25 级以上炼金产物。',
     cm_auto_pick: '提交时会自动挑选价值最低的符合条件的物品。',
     cm_done: '已完成', cm_progress: '进度 {0} / {1}', cm_reward: '奖励：', cm_submit: '提交', cm_claim: '领取', cm_will_use: '将会提交',
     cm_favor: 'Ayrelia 的青睐', cm_favor_have: '青睐：{0}', owned_mark: '（已拥有）',
@@ -308,7 +308,24 @@ var I18N = {
     ab_sway: '产物不是{0}时，有 {1} 的概率改投{0}',
     ab_el_n: '{0} ×{1}（含无属性 {2} 件）{3}',
     intel_n: '情报 {0}',
-    e_capMultBasic: '基础资源的储量上限 {0}（独立乘区）'
+    e_capMultBasic: '基础资源的储量上限 {0}（独立乘区）',
+    cm_pending: '等待 Rakuakira',
+    cm_st_sent: '已交付，Rakuakira 下次来时取走。',
+    cm_st_taken: '已取走，Rakuakira 下次来时带回奖励。',
+    cm_st_lent: '{0} 在 Ayrelia 那里，Rakuakira 再来 {1} 次后带它回来。',
+    cm_st_back: '{0} 已经回来了。',
+    cm_st_full: '翎鸾满了，奖励留到 Rakuakira 下次来时再带。',
+    cm_lend_pick: '借出：',
+    cm_no_dragon: '现在没有符合条件、又在家的小龙。',
+    cm_have: '现有 {0} / 需要 {1}',
+    tier_easy: '简单',
+    tier_normal: '普通',
+    tier_hard: '困难',
+    tier_late: '后期',
+    lent: '借给 Ayrelia',
+    lux_use: '允许小龙消耗贵重品',
+    lux_use_d: '勾选时，小龙会慢慢消耗库存里的贵重品，每种有库存的贵重品都提高幸福度。取消勾选后贵重品不再减少，也不再提高幸福度，适合给委托攒贵重品。',
+    disp_chance: '成交率 {0}'
   },
 
   en: {
@@ -417,7 +434,7 @@ var I18N = {
     raku_never: 'Rakuakira visits at the start of every month.', raku_last: 'Last visit: {0}, left {1} intel, {2}', raku_fed: 'got a snack.', raku_unfed: 'got no snack.',
     lysari_note: 'Rhasari\'s big sister in name. When Rhasari\'s mood is 70 or more, she may visit at the start of a month with gifts and rain: crops grow faster that month and plots regain water daily. The workshop only serves small dragons, so she can only peek through the window.',
     lysari_stat: 'Visits: {0}',
-    ws_display: 'Display Cases', ws_display_d: 'Each arriving customer has a {0} chance to buy one displayed item at full value.',
+    ws_display: 'Display Cases', ws_display_d: 'Each arriving customer looks at one displayed item and has a {0} chance to buy it at full value. Items worth more than 5 gold quills sell less often, and the pricier, the rarer.',
     each: 'each', take_back: 'Take back', empty_slot: 'Empty case', put_one: 'Display 1', put_all: 'Display all',
     ws_trip: 'Travel', trip_d: 'The moment you have spare money, you want to go out. Each trip spends every coin you have plus some quills for the road; ten days later you return with souvenirs, intel and permanent Travel Memories.',
     trip_stat: 'Travel Memories {0}: coins {1}, customers {2}, item value {3}',
@@ -476,7 +493,7 @@ var I18N = {
     sell_one: 'Sell 1 ({0})', sell_all: 'Sell all', confirm_sell: 'Sell {1} x {0} to the owl merchant?', to_display: 'Display',
 
     cm_letter: 'A letter from Ayrelia', cm_left: '{0} days left this quarter. Commissions completed: {1}.',
-    cm_note: 'At the start of each quarter Rakuakira brings new commissions: 1 per quarter at first, up to 4 with Favor upgrades. Delivery commissions are submitted once you have everything, and the items are taken; counting commissions count from when they arrive and are claimed once reached. Unfinished ones are collected at the end of the quarter, with no penalty. After researching Steady Flame, the easy commissions are replaced by requests for one specific alchemy product above level 25.',
+    cm_note: 'At the start of each quarter Rakuakira brings new commissions: 1 per quarter at first, up to 4 with Favor upgrades. Every commission is a delivery: submit once you have everything, and it is taken right away. The commission then waits and no longer uses a slot. Rakuakira collects it on her next visit and brings the reward on the visit after that (a lent dragonling comes back when its time is up). At the end of the quarter, commissions you have not submitted are collected with no penalty; submitted ones still finish. Once free alchemy is unlocked, easy commissions are replaced by requests for one specific alchemy product above level 25.',
     cm_auto_pick: 'The lowest-value matching items are picked automatically.',
     cm_done: 'Completed', cm_progress: 'Progress {0} / {1}', cm_reward: 'Reward: ', cm_submit: 'Submit', cm_claim: 'Claim', cm_will_use: 'Will submit',
     cm_favor: 'Ayrelia\'s Favor', cm_favor_have: 'Favor: {0}', owned_mark: '(owned)',
@@ -617,7 +634,24 @@ var I18N = {
     ab_sway: 'if the product is not {0}, there is a {1} chance it shifts to {0}',
     ab_el_n: '{0} x{1} (incl. {2} neutral) {3}',
     intel_n: '{0} intel',
-    e_capMultBasic: 'Basic resource storage limits {0} (separate multiplier)'
+    e_capMultBasic: 'Basic resource storage limits {0} (separate multiplier)',
+    cm_pending: 'Waiting for Rakuakira',
+    cm_st_sent: 'Delivered. Rakuakira will collect it on her next visit.',
+    cm_st_taken: 'Collected. Rakuakira will bring the reward on her next visit.',
+    cm_st_lent: '{0} is with Ayrelia; Rakuakira brings it back after {1} more visits.',
+    cm_st_back: '{0} is back.',
+    cm_st_full: 'Your quills are full; the reward comes on Rakuakira\'s next visit.',
+    cm_lend_pick: 'Lend: ',
+    cm_no_dragon: 'No eligible dragonling is at home right now.',
+    cm_have: 'Have {0} / need {1}',
+    tier_easy: 'Easy',
+    tier_normal: 'Normal',
+    tier_hard: 'Hard',
+    tier_late: 'Late',
+    lent: 'Lent to Ayrelia',
+    lux_use: 'Let dragonlings use treasures',
+    lux_use_d: 'When ticked, dragonlings slowly use up stored treasures, and each kind in stock raises happiness. Untick it and treasures stop decreasing but no longer raise happiness, which helps when saving them up for commissions.',
+    disp_chance: 'sale chance {0}'
   }
 };
 

@@ -327,7 +327,7 @@ function customerArrive() {
   var qc = queueCap();
   if (s.shop.queue > qc) { s.shop.lost += s.shop.queue - qc; s.shop.queue = qc; }
   if (s.shop.window.length && Math.random() < windowChance()) sellFromWindow();
-  if (s.shop.display.length && Math.random() < displayChance()) sellFromDisplay();
+  if (s.shop.display.length) tryDisplaySale();
 }
 function onSale(g) {
   G.s.shop.demand[g] = clamp(demandOf(g) - 0.03, 0.4, 1.6);
@@ -418,7 +418,11 @@ var WINDOW_AUTO_KEEP = 5;   // 自动补货时每格补到多少
 function windowUnlocked() { return FOODS.some(function (f) { return f.kind === 'proc' && foodUnlocked(f, G.s); }); }
 function windowSlots() { return 2 + Math.floor(eff('windowSlots')); }
 function windowChance() { return 0.08 + eff('windowChance'); }
-function displayChance() { return 0.08 + eff('displayChance'); }
+/* v0.5.1：展柜的基础成交率从 8% 大幅降到 2.5%；5 金翎以上的物品还要再乘一个价格系数，越贵越难卖 */
+var DISPLAY_BASE = 0.025, DISPLAY_FREE_PRICE = 5 * QUILL_GOLD, DISPLAY_PRICE_POW = 1.5;
+function displayChance() { return DISPLAY_BASE + eff('displayChance'); }
+function displayPriceFactor(id) { var v = itemValue(id); return v <= DISPLAY_FREE_PRICE ? 1 : Math.pow(DISPLAY_FREE_PRICE / v, DISPLAY_PRICE_POW); }
+function displayItemChance(id) { return displayChance() * displayPriceFactor(id); }
 function windowPrice(id) { return FOOD_MAP[id].price * (1 + eff('priceAll')); }
 function windowSlot(id) { return G.s.shop.window.find(function (x) { return x.id === id; }); }
 function canPutInWindow(id) {
@@ -468,11 +472,16 @@ function sellFromWindow() {
 
 /* 展柜：摆放炼金物品 */
 function displaySlots() { return Math.floor(eff('displaySlots')); }
-function sellFromDisplay() {
-  var s = G.s;
-  var slots = s.shop.display.filter(function (x) { return x.n > 0; });
+/* 顾客先随手看中一格，再按这件东西的成交率判定买不买 */
+function tryDisplaySale() {
+  var slots = G.s.shop.display.filter(function (x) { return x.n > 0; });
   if (!slots.length) return;
   var sl = pick(slots);
+  if (Math.random() < displayItemChance(sl.id)) sellFromDisplay(sl);
+}
+function sellFromDisplay(sl) {
+  var s = G.s;
+  if (!sl || sl.n <= 0) return;
   sl.n--;
   var got = payout(itemValue(sl.id));
   s.stats.displaySold++;
@@ -613,6 +622,8 @@ function rakuVisit() {
   }
   addRes('intel', intel);
   s.raku.last = { snack: !!snack, intel: intel, m: monthIdx() };
+  /* 顺便处理挂起的委托：取走交付的东西，或带回奖励 */
+  commVisit();
 }
 
 /* ========== Kirro 的旅行 ========== */
@@ -999,7 +1010,14 @@ function transmute(defer) {
   return { out: out, failed: failed, intended: intended, recipe: recipe ? recipe.id : null, lv: lv, swayed: swayed, flush: defer ? flush : function () {} };
 }
 
-/* ========== 委托（Ayrelia） ========== */
+/* ========== 委托（Ayrelia） ==========
+ * v0.5.1：委托全部是交货式，没有“完成若干次”的计数委托。按难度分三个池：
+ *   简单：大量某种基础资源；少量（3 到 7 份）某种已解锁商品。
+ *   普通：大量（10 到 15 份）某种已解锁商品；中量（10 到 40 个）某种贵重品；借出一只符合要求的小龙 30 天；15 级以下的指定炼金材料。
+ *   困难：大量（40 到 120 个）某种贵重品；借出一只要求更高的小龙 90 天；15 到 24 级的指定炼金材料。
+ * 解锁自由炼金（嬗变理论）后进入后期：抽到简单委托时，改为交付 1 件指定的 26 级以上普通炼金产物。
+ * 交付时东西立即扣除，委托挂起（不占委托槽）：Rakuakira 下一次来时取走，再下一次来时带回奖励，委托才算完成。
+ * 借出的小龙在取走之后要过 1 个月（普通）或 3 个月（困难）才回来，回来时一起带回奖励。 */
 function progStage() {
   var s = G.s, st = 1;
   if (s.tech.roasting) st++;
@@ -1017,169 +1035,212 @@ function maxLootLevel() {
   for (var id in s.disp.unlocked) m = Math.max(m, DEST_MAP[id].lv + 6);
   return m;
 }
-/* 青睐奖励：前中期的简单委托给得少，困难的委托给得多 */
+/* 青睐奖励：简单的给得少，困难的给得多 */
 function favEasy(st) { return st < 5 ? 1 : st < 10 ? 2 : 3; }
 function favMid(st) { return 3 + Math.floor(st / 4); }
 function favHard(st) { return 5 + Math.floor(st / 3); }
+/* 每份委托先按权重抽难度，再在该难度能出现的种类里等概率抽 */
+var COMM_TIER_W = { easy: 5, normal: 4, hard: 2 };
+var COMM_HARD_STAGE = 6;                                   // 进度阶段达到 6 才会出现困难委托
+var COMM_QUILL = { easy: 288, normal: 864, hard: 2592 };   // 翎鸾奖励的基数（铜），再乘 (1 + 0.1 × 进度阶段)
+var COMM_RENOWN = { easy: 3, normal: 4, hard: 6 };         // 声望奖励的基数，再加进度阶段
+var COMM_LEND_DAYS = { normal: 30, hard: 90 };
+var COMM_BASIC = ['coins', 'firewood', 'ore', 'lore', 'fertilizer'];
+var COMM_PRODUCT_MIN = 26, COMM_PRODUCT_MAX = 40;
+function commLate() { return !!G.s.tech.transmutation; }
+function commQuill(tier, st) { return Math.round(COMM_QUILL[tier] * (1 + 0.1 * st)); }
+function commFavor(tier, st) { return tier === 'easy' ? favEasy(st) : tier === 'normal' ? favMid(st) : favHard(st); }
+function commRw(tier, st, quillMult, extraQuill) {
+  return { quill: Math.round(commQuill(tier, st) * (quillMult || 1) + (extraQuill || 0)), renown: COMM_RENOWN[tier] + st, favor: commFavor(tier, st) };
+}
+/* 把数量取成好看的整数：两位有效数字 */
+function niceAmount(x) {
+  if (x < 100) return Math.max(1, Math.round(x));
+  var p = Math.pow(10, Math.floor(Math.log10(x)) - 1);
+  return Math.round(x / p) * p;
+}
+/* 可以借出的小龙：在家、不是领头龙 */
+function lendPool() { var s = G.s; return s.dragons.filter(function (d) { return !d.away && d.id !== s.leader; }); }
+function lendCandidates(c) {
+  return lendPool().filter(function (d) { return d.cl >= c.minCl && d.gl >= c.minGl && c.els.indexOf(d.el) >= 0; })
+    .sort(function (a, b) { return (a.cl + a.gl * 10) - (b.cl + b.gl * 10); });
+}
+function luxCount(s) { return LUXURIES.filter(function (l) { return s.luxSeen && s.luxSeen[l.id]; }); }
+function materialPool(s, lo, hi) {
+  return ITEM_LIST.filter(function (it) { return !it.x && it.cat !== 'cry' && it.lv >= lo && it.lv <= hi && (it.g || s.seen[it.id]); });
+}
+function canMaterial(s) { return s.bld.waystation > 0 || marketUnlocked(); }
 var COMM_TYPES = {
+  /* 大量某种基础资源：当前储量上限的 40% 到 70% */
+  basic: {
+    tiers: ['easy'],
+    avail: function (s) { return COMM_BASIC.some(function (r) { return RES_MAP[r].unlocked(s) && capOf(r) > 0; }); },
+    gen: function (s, st, tier) {
+      var r = pick(COMM_BASIC.filter(function (x) { return RES_MAP[x].unlocked(s) && capOf(x) > 0; }));
+      return { res: r, need: niceAmount(capOf(r) * (0.4 + Math.random() * 0.3)), rw: commRw(tier, st) };
+    }
+  },
+  /* 某种已解锁商品：简单 3 到 7 份，普通 10 到 15 份（不超过该商品的上限） */
   goods: {
+    tiers: ['easy', 'normal'],
     avail: function (s) { return goodsUnlocked().length > 0; },
-    gen: function (s, st) {
+    gen: function (s, st, tier) {
       var f = pick(goodsUnlocked());
-      var need = clamp(Math.round((4 + st * 2) * 3 / f.price), 2, 30);
-      return { good: f.id, need: need, rw: { renown: 3 + st, quill: Math.round(basePrice(f.id) * need * 1.5), favor: favEasy(st) } };
+      var need = tier === 'easy' ? randInt(3, 7) : randInt(10, 15);
+      need = Math.max(1, Math.min(need, Math.floor(capOf(f.id))));
+      return { good: f.id, need: need, rw: commRw(tier, st, 1, basePrice(f.id) * need * 2) };
     }
   },
-  serve: {
-    avail: function (s) { return goodsUnlocked().length > 0; },
-    gen: function (s, st) { return { need: 10 + st * 6, base: s.stats.served, rw: { renown: 4 + st, intel: 3 + st, favor: favEasy(st) } }; }
+  /* 某种见过的贵重品：普通 10 到 40 个，困难 40 到 120 个；越稀有的要得越少（除以它的最低地点层级） */
+  lux: {
+    tiers: ['normal', 'hard'],
+    avail: function (s) { return luxCount(s).length > 0; },
+    gen: function (s, st, tier) {
+      var l = pick(luxCount(s));
+      var raw = tier === 'normal' ? randInt(10, 40) : randInt(40, 120);
+      var need = Math.max(tier === 'normal' ? 5 : 15, Math.round(raw / l.tier));
+      var typical = tier === 'normal' ? 25 : 80;
+      return { lux: l.id, need: need, rw: commRw(tier, st, need * l.tier / typical) };
+    }
   },
-  firewood: {
-    avail: function (s) { return true; },
-    gen: function (s, st) { return { need: Math.min(Math.round(80 + st * 40), Math.floor(capOf('firewood') * 0.9)), rw: { intel: 4 + st, renown: 2, favor: favEasy(st) } }; }
+  /* 借出一只小龙：战斗等级、成长等级不低于全部小龙的中位数（困难为前 20%），属性在指定的几种之内。
+   * 生成时保证至少有一只小龙符合 */
+  lend: {
+    tiers: ['normal', 'hard'],
+    avail: function (s, tier) { return lendPool().length >= (tier === 'hard' ? 6 : 3); },
+    gen: function (s, st, tier) {
+      var ds = s.dragons.filter(function (d) { return d.id !== s.leader; });
+      var p = tier === 'hard' ? 0.8 : 0.5;
+      var cls = ds.map(function (d) { return d.cl; }).sort(function (a, b) { return a - b; });
+      var gls = ds.map(function (d) { return d.gl; }).sort(function (a, b) { return a - b; });
+      var minCl = cls[Math.floor((cls.length - 1) * p)], minGl = gls[Math.floor((gls.length - 1) * p)];
+      var cand = ds.filter(function (d) { return d.cl >= minCl && d.gl >= minGl; });
+      var anchor = cand.length ? pick(cand) : ds[0];
+      if (!cand.length) { minCl = anchor.cl; minGl = anchor.gl; }
+      var els = [anchor.el], k = tier === 'hard' ? 2 : 3;
+      while (els.length < k) { var e = pick(ELEMENT_KEYS); if (els.indexOf(e) < 0) els.push(e); }
+      return { minCl: minCl, minGl: minGl, els: els, days: COMM_LEND_DAYS[tier], need: 1, rw: commRw(tier, st) };
+    }
   },
-  harvest: {
-    avail: function (s) { return !!s.tech.agronomy; },
-    gen: function (s, st) { return { need: 8 + st * 2, base: s.stats.harvests, rw: { renown: 3 + st, quill: 4 + 2 * st, favor: favEasy(st) } }; }
-  },
-  window: {
-    avail: function (s) { return windowUnlocked(); },
-    gen: function (s, st) { return { need: 3 + st, base: s.stats.windowSold, rw: { renown: 3 + st, quill: 6 + 3 * st, favor: favEasy(st) } }; }
-  },
+  /* 指定炼金材料：普通为 14 级以下，困难为 15 到 24 级。可以采集或已经见过的普通物品，见过的权重 ×2 */
   item: {
-    avail: function (s) { return s.bld.waystation > 0; },
-    gen: function (s, st) {
-      var maxLv = maxLootLevel();
-      var pool = ITEM_LIST.filter(function (it) { return it.g && it.cat !== 'cry' && it.lv <= maxLv && (s.seen[it.id] || it.lv <= maxLv - 4); });
-      if (!pool.length) pool = ITEM_LIST.filter(function (it) { return it.g && it.lv <= 6; });
-      var it = pick(pool);
-      var need = it.lv >= 15 ? 1 : it.lv >= 8 ? 2 : 3;
-      return { item: it.id, need: need, rw: { quill: itemValue(it.id) * need * 2, renown: 4 + st, favor: it.lv >= 15 ? favHard(st) : favMid(st) } };
+    tiers: ['normal', 'hard'],
+    avail: function (s, tier) { return canMaterial(s) && materialPool(s, tier === 'hard' ? 15 : 1, tier === 'hard' ? 24 : 14).length > 0; },
+    gen: function (s, st, tier) {
+      var pool = materialPool(s, tier === 'hard' ? 15 : 1, tier === 'hard' ? 24 : 14);
+      var it = wpick(pool.map(function (x) { return [x, RARITY.weight[x.r] * (s.seen[x.id] ? 2 : 1)]; }));
+      var need = tier === 'hard' ? (it.lv >= 20 ? 1 : 2) : (it.lv >= 8 ? 2 : 3);
+      return { item: it.id, need: need, rw: commRw(tier, st, 1, itemValue(it.id) * need * 2) };
     }
   },
-  element: {
-    avail: function (s) { return s.bld.waystation > 0; },
-    gen: function (s, st) {
-      var el = pick(ELEMENT_KEYS);
-      var minLv = clamp(Math.floor(maxLootLevel() * 0.45), 1, 30);
-      return { el: el, minLv: minLv, need: 2 + (st > 8 ? 1 : 0), rw: { renown: 5 + st, intel: 5, favor: favHard(st) } };
-    }
-  },
-  rarity: {
-    avail: function (s) { return s.bld.waystation > 0; },
-    gen: function (s, st) {
-      var r = s.tech.transmutation ? (st > 12 ? 4 : 3) : 2;
-      return { minR: r, need: r >= 4 ? 1 : 2, rw: { renown: 5 + st, quill: 24 * r * r, favor: favHard(st) } };
-    }
-  },
-  dispatch: {
-    avail: function (s) { return s.bld.waystation > 0; },
-    gen: function (s, st) {
-      var ids = Object.keys(s.disp.unlocked);
-      var far = ids.filter(function (x) { return x !== 'lunavite'; });
-      var id = pick(far.length ? far : ids);
-      return { dest: id, need: 1, base: s.stats.dispDone[id] || 0, rw: { intel: 6 + DEST_MAP[id].tier * 4, renown: 3 + st, favor: DEST_MAP[id].tier >= 3 ? favHard(st) : favMid(st) } };
-    }
-  },
-  alchemy: {
-    avail: function (s) { return !!s.tech.transmutation; },
-    gen: function (s, st) { return { need: 5 + Math.floor(st / 2), base: s.stats.alch, rw: { renown: 5 + st, intel: 8, favor: favMid(st) } }; }
-  },
-  caramel: {
-    avail: function (s) { return !!s.rhasari.joined; },
-    gen: function (s, st) { return { need: 3 + st, base: s.stats.caramel, rw: { renown: 4 + st, quill: Math.round(basePrice('caramel') * (3 + st)), favor: favEasy(st) } }; }
-  },
-  /* v0.4.12 后期委托：1 件指定的 26 级以上普通炼金产物。只在后期顶替简单委托，不会单独抽到。
-   * 等级上限随玩家见过的最高等级普通物品提高（至少 30，最多 40），按稀有度权重抽，见过的物品权重 ×2 */
+  /* 后期：1 件指定的 26 级以上普通炼金产物，顶替简单委托。等级上限随见过的最高等级提高（30 到 40） */
   product: {
+    tiers: [],
     avail: function (s) { return !!s.tech.transmutation; },
-    gen: function (s, st, list) {
+    gen: function (s, st, tier, list) {
       var taken = (list || []).filter(function (c) { return c.type === 'product'; }).map(function (c) { return c.item; });
       var top = 30;
       for (var id in s.seen) { var x = ITEMS[id]; if (x && !x.x && x.lv > top) top = x.lv; }
       var hi = Math.min(COMM_PRODUCT_MAX, top);
       var pool = ITEM_LIST.filter(function (it) { return !it.x && it.lv >= COMM_PRODUCT_MIN && it.lv <= hi && taken.indexOf(it.id) < 0; });
       var it = wpick(pool.map(function (it) { return [it, RARITY.weight[it.r] * (s.seen[it.id] ? 2 : 1)]; }));
-      return { item: it.id, need: 1, rw: { quill: itemValue(it.id) * 2, renown: 5 + st, favor: favHard(st) } };
+      var rw = commRw('normal', st, 1, itemValue(it.id) * 2);
+      rw.favor = favHard(st);
+      return { item: it.id, need: 1, rw: rw };
     }
   }
 };
-var COMM_PRODUCT_MIN = 26, COMM_PRODUCT_MAX = 40;
-/* 简单委托。研究“稳定火候”后进入后期，抽到这些时改为发一份指定炼金产物的委托 */
-var COMM_EASY = ['goods', 'serve', 'firewood', 'harvest', 'window', 'caramel'];
-function commLate() { return !!G.s.tech.steady1; }
+/* 某个难度现在能出现哪些种类 */
+function commKinds(tier, s, st) {
+  if (tier === 'hard' && st < COMM_HARD_STAGE) return [];
+  return Object.keys(COMM_TYPES).filter(function (k) { return COMM_TYPES[k].tiers.indexOf(tier) >= 0 && COMM_TYPES[k].avail(s, tier); });
+}
+/* 同一季度不重复：同一种东西、同一难度的借龙只出现一次 */
+function commKey(c) { return c.type + ':' + (c.res || c.good || c.lux || c.item || c.tier); }
 /* 每季度的委托数：开始只有 1 份，可用青睐兑换“第二封信”等升级，最多 4 份 */
 function commCount() { return Math.min(4, 1 + Math.floor(eff('commSlots'))); }
 function newQuarter(fromBuild) {
   var s = G.s, qk = quarterKey();
   if (s.comm.qkey === qk) return;
-  if (!fromBuild && s.comm.list.some(function (c) { return !c.done; })) logC('oc', TXT.story.quarterEnd);
+  if (!fromBuild && s.comm.list.length) logC('oc', TXT.story.quarterEnd);
   s.comm.qkey = qk;
   s.comm.letter = randInt(0, TXT.ayrelia.length - 1);
-  var st = progStage();
-  var types = Object.keys(COMM_TYPES).filter(function (k) { return k !== 'product' && COMM_TYPES[k].avail(s); });
-  var n = commCount(), late = commLate();
-  var list = [], bag = types.slice();
-  for (var i = 0; i < n && types.length; i++) {
-    if (!bag.length) bag = types.slice();
-    var t = bag.splice(Math.floor(Math.random() * bag.length), 1)[0];
-    if (late && COMM_EASY.indexOf(t) >= 0) t = 'product';
-    var c = COMM_TYPES[t].gen(s, st, list);
-    c.type = t;
-    c.done = false;
-    list.push(c);
+  var st = progStage(), n = commCount(), late = commLate(), list = [];
+  for (var i = 0; i < n; i++) {
+    var tiers = ['easy', 'normal', 'hard'].filter(function (t) { return commKinds(t, s, st).length; });
+    if (!tiers.length) break;
+    var c = null;
+    for (var tries = 0; tries < 8 && !c; tries++) {
+      var tier = wpick(tiers.map(function (t) { return [t, COMM_TIER_W[t]]; }));
+      var type = late && tier === 'easy' ? 'product' : pick(commKinds(tier, s, st));
+      var cc = COMM_TYPES[type].gen(s, st, tier, list);
+      cc.type = type;
+      cc.tier = type === 'product' ? 'late' : tier;
+      if (!list.some(function (x) { return commKey(x) === commKey(cc); })) c = cc;
+    }
+    if (c) list.push(c);
   }
   s.comm.list = list;
   logC('oc', TXT.raku.letter);
 }
+/* 读档时：旧版本的计数委托已经不存在了，清掉本季度没交的委托，第二天重新发一批 */
+function commMigrate(s) {
+  if (!s.comm) return;
+  if (!Array.isArray(s.comm.pending)) s.comm.pending = [];
+  var bad = s.comm.list.some(function (c) { return !COMM_TYPES[c.type] || !c.tier; });
+  if (bad) {
+    s.comm.list = [];
+    s.comm.regen = true;
+  }
+}
+function commDaily() {
+  var s = G.s;
+  if (s.comm.regen && s.bld.workshop > 0) {
+    s.comm.regen = false;
+    s.comm.qkey = -99;
+    newQuarter(true);
+  }
+}
 function commTexts(c) {
   var tp = TXT.comm[c.type], t, d;
   switch (c.type) {
+    case 'basic': t = fmtPair(tp.t, [RES_MAP[c.res]]); d = fmtPair(tp.d, [RES_MAP[c.res], fmt(c.need)]); break;
     case 'goods': t = fmtPair(tp.t, [RES_MAP[c.good]]); d = fmtPair(tp.d, [RES_MAP[c.good], c.need]); break;
-    case 'item': t = fmtPair(tp.t, [itemPair(c.item)]); d = fmtPair(tp.d, [itemPair(c.item), c.need]); break;
-    case 'product': t = fmtPair(tp.t, [itemPair(c.item)]); d = fmtPair(tp.d, [itemPair(c.item), ITEMS[c.item].lv, 'R' + ITEMS[c.item].r]); break;
-    case 'element': t = fmtPair(tp.t, [ELEMENTS[c.el]]); d = fmtPair(tp.d, [ELEMENTS[c.el], c.need, c.minLv]); break;
-    case 'rarity': t = fmtPair(tp.t, []); d = fmtPair(tp.d, [c.need, c.minR]); break;
-    case 'dispatch': t = fmtPair(tp.t, [DEST_MAP[c.dest]]); d = fmtPair(tp.d, [DEST_MAP[c.dest]]); break;
-    default: t = fmtPair(tp.t, []); d = fmtPair(tp.d, [c.need]);
+    case 'lux': t = fmtPair(tp.t, [RES_MAP[c.lux]]); d = fmtPair(tp.d, [RES_MAP[c.lux], c.need]); break;
+    case 'item': case 'product':
+      t = fmtPair(tp.t, [itemPair(c.item)]);
+      d = fmtPair(tp.d, [itemPair(c.item), c.need, ITEMS[c.item].lv, 'R' + ITEMS[c.item].r]);
+      break;
+    case 'lend':
+      t = fmtPair(tp.t, []);
+      d = fmtPair(tp.d, [c.days, c.minCl, c.minGl, joinPairs(c.els.map(function (e) { return ELEMENTS[e]; }), true)]);
+      break;
+    default: t = { zh: c.type, en: c.type }; d = { zh: '', en: '' };
   }
   return { t: t, d: d };
-}
-function commPickItems(c) {
-  var s = G.s, list = [];
-  for (var id in s.inv) {
-    var it = ITEMS[id];
-    if (!it || id === 'impurity') continue;
-    if (c.type === 'element' && (it.el !== c.el || it.lv < c.minLv)) continue;
-    if (c.type === 'rarity' && it.r < c.minR) continue;
-    list.push(it);
-  }
-  list.sort(function (a, b) { return itemValue(a.id) - itemValue(b.id); });
-  var picked = {}, n = 0;
-  for (var i = 0; i < list.length && n < c.need; i++) {
-    var take = Math.min(s.inv[list[i].id], c.need - n);
-    picked[list[i].id] = take;
-    n += take;
-  }
-  return { picked: picked, n: n };
 }
 function commProgress(c) {
   var s = G.s;
   switch (c.type) {
+    case 'basic': return Math.min(c.need, Math.floor(s.res[c.res] || 0));
     case 'goods': return Math.min(c.need, Math.floor(s.res[c.good] || 0));
-    case 'firewood': return Math.min(c.need, Math.floor(s.res.firewood));
+    case 'lux': return Math.min(c.need, Math.floor(s.res[c.lux] || 0));
     case 'item': case 'product': return Math.min(c.need, s.inv[c.item] || 0);
-    case 'element': case 'rarity': return commPickItems(c).n;
-    case 'serve': return Math.min(c.need, s.stats.served - c.base);
-    case 'harvest': return Math.min(c.need, s.stats.harvests - c.base);
-    case 'window': return Math.min(c.need, (s.stats.windowSold || 0) - c.base);
-    case 'dispatch': return Math.min(c.need, (s.stats.dispDone[c.dest] || 0) - c.base);
-    case 'alchemy': return Math.min(c.need, s.stats.alch - c.base);
-    case 'caramel': return Math.min(c.need, s.stats.caramel - c.base);
+    case 'lend': return lendCandidates(c).length ? 1 : 0;
   }
   return 0;
 }
-function commIsSubmit(c) { return ['goods', 'firewood', 'item', 'product', 'element', 'rarity'].indexOf(c.type) >= 0; }
+/* 现有多少（界面显示用，不封顶） */
+function commHave(c) {
+  var s = G.s;
+  switch (c.type) {
+    case 'basic': return s.res[c.res] || 0;
+    case 'goods': return s.res[c.good] || 0;
+    case 'lux': return s.res[c.lux] || 0;
+    case 'item': case 'product': return s.inv[c.item] || 0;
+  }
+  return 0;
+}
 function commReward(c) {
   var m = 1 + eff('commReward'), out = {};
   for (var k in c.rw) out[k] = k === 'favor' ? c.rw[k] : Math.round(c.rw[k] * m);
@@ -1193,27 +1254,72 @@ function rewardPair(rw) {
   }
   return { zh: list.map(function (p) { return p.zh; }).join('，'), en: list.map(function (p) { return p.en; }).join(', ') };
 }
-function completeComm(i) {
+/* 交付：东西立即扣除，委托挂起，等 Rakuakira 来取。借龙时 dragonId 为玩家选的小龙，不填就借最弱的那只 */
+function completeComm(i, dragonId) {
   var s = G.s, c = s.comm.list[i];
-  if (!c || c.done || commProgress(c) < c.need) return;
-  if (c.type === 'goods') addRes(c.good, -c.need);
-  else if (c.type === 'firewood') addRes('firewood', -c.need);
+  if (!c || commProgress(c) < c.need) return;
+  if (c.type === 'basic') addRes(c.res, -c.need);
+  else if (c.type === 'goods') addRes(c.good, -c.need);
+  else if (c.type === 'lux') addRes(c.lux, -c.need);
   else if (c.type === 'item' || c.type === 'product') removeItem(c.item, c.need);
-  else if (c.type === 'element' || c.type === 'rarity') {
-    var pk = commPickItems(c).picked;
-    for (var id in pk) removeItem(id, pk[id]);
+  else if (c.type === 'lend') {
+    var cand = lendCandidates(c);
+    var d = cand.find(function (x) { return x.id === dragonId; }) || cand[0];
+    if (!d) return;
+    d.away = true;
+    d.lent = true;
+    c.dragon = d.id;
+    c.dragonName = d.name;
   }
-  var rw = commReward(c);
+  c.state = 'sent';
+  s.comm.list.splice(i, 1);
+  s.comm.pending.push(c);
+  logC('oc', TXT.comm.sent, commTexts(c).t);
+}
+/* Rakuakira 每月来访时处理挂起的委托 */
+function commVisit() {
+  var s = G.s, keep = [];
+  (s.comm.pending || []).forEach(function (c) {
+    var tx = commTexts(c).t;
+    if (c.state === 'sent') {
+      c.state = 'taken';
+      c.wait = c.type === 'lend' ? Math.round(c.days / MONTH_DAYS) : 1;
+      if (c.type === 'lend') logC('oc', TXT.comm.lentGo, c.dragonName);
+      else logC('oc', TXT.comm.taken, tx);
+      keep.push(c);
+      return;
+    }
+    c.wait = (c.wait || 0) - 1;
+    if (c.wait > 0) { keep.push(c); return; }
+    if (c.type === 'lend' && !c.back) {
+      var d = s.dragons.find(function (x) { return x.id === c.dragon; });
+      if (d) { d.away = false; d.lent = false; }
+      c.back = true;
+      logC('oc', TXT.comm.lentBack, c.dragonName);
+    }
+    if (!commPay(c)) { keep.push(c); return; }
+  });
+  s.comm.pending = keep;
+}
+/* 发奖励。翎鸾已经满了的时候先不发，留到下次（满了就拿不到翎鸾，免得奖励白白丢掉） */
+function commPay(c) {
+  var s = G.s, rw = commReward(c);
+  if (rw.quill && s.res.quill >= capOf('quill') - 0.5) {
+    if (!c.full) logC('oc', TXT.comm.full, commTexts(c).t);
+    c.full = true;
+    return false;
+  }
   for (var k in rw) {
     if (k === 'favor' || k === 'renown') s.res[k] += rw[k];
     else addRes(k, rw[k]);
   }
+  if (rw.quill) s.stats.quillEarned += rw.quill;
   if (rw.favor) s.comm.everGot = true;
-  c.done = true;
   s.comm.done++;
   logC('oc', TXT.comm.done, commTexts(c).t, rewardPair(rw));
+  return true;
 }
-function commReady() { return G.s.comm.list.filter(function (c) { return !c.done && commProgress(c) >= c.need; }).length; }
+function commReady() { return G.s.comm.list.filter(function (c) { return commProgress(c) >= c.need; }).length; }
 /* 青睐升级：可多级的升级按 growth 逐级加价（炉边闲谈最多 7 级）；落羽每次 +repeat */
 function favorCost(f) {
   if (f.repeat) return f.cost + f.repeat * G.s.comm.plumeBuys;

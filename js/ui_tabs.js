@@ -79,6 +79,10 @@ function buildDragons(el) {
   const hl = liveText('div', () => T('dr_happy', Math.round(G.happy), Math.round(happyFactor() * 100) + '%'), 'line happy-line');
   hl._tip = tipHappy;
   el.appendChild(hl);
+  /* 珍藏清单：小龙能不能拿贵重品来玩 */
+  el.appendChild(region(() => !!s.tech.lux_ledger, r => {
+    if (s.tech.lux_ledger) r.appendChild(h('div', { class: 'line', tip: () => tipSimple(T('lux_use'), T('lux_use_d')) }, checkbox(T('lux_use'), () => s.luxUse !== false, v => { s.luxUse = v; computeHappiness(); })));
+  }));
   el.appendChild(note(T('dr_upkeep', fmt(upkeepRate()))));
   if (!s.dragons.length) el.appendChild(note(T('dr_none')));
 
@@ -172,7 +176,7 @@ function dragonCard(d, jobOpts) {
   card.appendChild(h('div', { class: 'dc-top' }, star,
     h('b', { class: 'dc-name', text: d.name }), isLeader ? h('span', { class: 'badge', text: T('leader_badge') }) : null,
     elTag(d.el), h('span', { class: 'dim', text: T('cl_short') + ' ' + d.cl + '  ' + T('gl_short') + ' ' + d.gl }),
-    d.away ? h('span', { class: 'dim', text: T('away') }) : null,
+    d.away ? h('span', { class: 'dim', text: T(d.lent ? 'lent' : 'away') }) : null,
     liveText('span', () => d.fed > 0 ? T('fed_days', Math.ceil(d.fed)) : T('hungry'), d.fed > 0 ? 'fed' : 'dim'),
     h('span', { class: 'dim small', tip: () => tipFood(d.fav), text: T('fav_food', L(RES_MAP[d.fav])) })));
   const jsel = select(jobOpts, () => d.job || '', v => setDragonJob(d.id, v));
@@ -325,7 +329,7 @@ function buildWorkshop(el) {
       s.shop.display.forEach(sl => {
         const it = ITEMS[sl.id];
         t.appendChild(h('tr', { tip: () => tipItem(sl.id) }, h('td', { style: rarityStyle(it.r), text: L(it) }), h('td', { text: '×' + sl.n }),
-          h('td', { class: 'dim', text: fmtQuill(itemValue(sl.id)) + ' ' + T('each') }), h('td', null, lbtn(T('take_back'), () => takeFromDisplay(sl.id)))));
+          h('td', { class: 'dim', text: fmtQuill(itemValue(sl.id)) + ' ' + T('each') + T('list_sep') + T('disp_chance', (displayItemChance(sl.id) * 100).toFixed(displayItemChance(sl.id) < 0.01 ? 2 : 1) + '%') }), h('td', null, lbtn(T('take_back'), () => takeFromDisplay(sl.id)))));
       });
       for (let i = s.shop.display.length; i < displaySlots(); i++) t.appendChild(h('tr', null, h('td', { class: 'dim', colspan: 4, text: T('empty_slot') })));
       r.appendChild(h('div', { class: 'tbl-wrap' }, t));
@@ -894,20 +898,44 @@ function buildCommissions(el) {
   }));
   el.appendChild(liveText('div', () => T('cm_left', Math.ceil(daysLeftInQuarter()), s.comm.done), 'line'));
   el.appendChild(note(T('cm_note')));
-  el.appendChild(region(() => s.comm.qkey + '|' + s.comm.list.map(c => c.done).join(','), r => {
+  /* 本季度还没提交的委托。借龙的委托附带一个下拉框，选借哪一只 */
+  el.appendChild(region(() => s.comm.qkey + '|' + s.comm.list.map(c => commKey(c) + (c.type === 'lend' ? '=' + lendCandidates(c).map(d => d.id).join('.') : '')).join(',') + '|' + LANG, r => {
     s.comm.list.forEach((c, i) => {
       const tx = commTexts(c);
-      const card = h('div', { class: 'card' + (c.done ? ' done' : '') });
-      card.appendChild(h('div', { class: 'card-t', text: tx.t[LANG], tip: c.item && ITEMS[c.item] ? () => tipItem(c.item) : null }));
+      const card = h('div', { class: 'card' });
+      card.appendChild(h('div', { class: 'card-t', tip: c.item && ITEMS[c.item] ? () => tipItem(c.item) : null },
+        tx.t[LANG], h('span', { class: 'tier-tag tier-' + c.tier, text: T('tier_' + c.tier) })));
       card.appendChild(h('div', { class: 'card-d', text: tx.d[LANG] }));
-      if (c.type === 'element' || c.type === 'rarity') card.appendChild(note(T('cm_auto_pick')));
-      card.appendChild(liveText('div', () => c.done ? T('cm_done') : T('cm_progress', commProgress(c), c.need), 'card-p'));
+      card.appendChild(liveText('div', () => c.type === 'lend' ? '' : T('cm_have', fmt(Math.floor(commHave(c))), fmt(c.need)), 'card-p'));
       card.appendChild(liveText('div', () => T('cm_reward') + rewardPair(commReward(c))[LANG], 'card-r dim'));
-      if (!c.done) card.appendChild(h('div', { class: 'card-b' }, lbtn(commIsSubmit(c) ? T('cm_submit') : T('cm_claim'), () => completeComm(i), () => commProgress(c) >= c.need,
-        c.type === 'element' || c.type === 'rarity' ? () => {
-          const pk = commPickItems(c).picked;
-          return tipSimple(T('cm_will_use'), Object.keys(pk).map(id => L(ITEMS[id]) + ' ×' + pk[id]).join(T('list_sep')) || T('nothing'));
-        } : null)));
+      let sel = null;
+      if (c.type === 'lend') {
+        const cand = lendCandidates(c);
+        if (cand.length) {
+          sel = h('select', { class: 'sel' }, cand.map(d => h('option', { value: String(d.id), text: d.name + '  CL ' + d.cl + '  GL ' + d.gl + '  ' + L(ELEMENTS[d.el]) })));
+          card.appendChild(h('div', { class: 'line ctrl' }, T('cm_lend_pick'), sel));
+        } else card.appendChild(note(T('cm_no_dragon')));
+      }
+      card.appendChild(h('div', { class: 'card-b' }, lbtn(T('cm_submit'), () => completeComm(i, sel ? +sel.value : undefined), () => commProgress(c) >= c.need)));
+      r.appendChild(card);
+    });
+  }));
+  /* 已提交、等 Rakuakira 取走或带回奖励的委托 */
+  el.appendChild(region(() => (s.comm.pending || []).map(c => commKey(c) + c.state + (c.wait || 0) + (c.back ? 'b' : '') + (c.full ? 'f' : '')).join(',') + '|' + LANG, r => {
+    if (!s.comm.pending || !s.comm.pending.length) return;
+    r.appendChild(section(T('cm_pending')));
+    s.comm.pending.forEach(c => {
+      const tx = commTexts(c);
+      let st;
+      if (c.full) st = T('cm_st_full');
+      else if (c.state === 'sent') st = T('cm_st_sent');
+      else if (c.type === 'lend' && !c.back) st = c.wait > 1 ? T('cm_st_lent', c.dragonName, c.wait) : T('cm_st_lent', c.dragonName, 1);
+      else st = T('cm_st_taken');
+      const card = h('div', { class: 'card pending' });
+      card.appendChild(h('div', { class: 'card-t', tip: c.item && ITEMS[c.item] ? () => tipItem(c.item) : null },
+        tx.t[LANG], h('span', { class: 'tier-tag tier-' + c.tier, text: T('tier_' + c.tier) })));
+      card.appendChild(h('div', { class: 'card-p', text: st }));
+      card.appendChild(h('div', { class: 'card-r dim', text: T('cm_reward') + rewardPair(commReward(c))[LANG] }));
       r.appendChild(card);
     });
   }));

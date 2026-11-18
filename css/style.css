@@ -431,3 +431,10 @@ tr.blocked td { color: var(--dim); }
   .stat-l.wide { min-width: 0; }
   .bar { width: 120px; }
 }
+
+/* v0.5.1 委托：难度标签与等 Rakuakira 的委托 */
+.tier-tag { display: inline-block; margin-left: 8px; padding: 0 6px; font-size: 11px; line-height: 16px; border: 1px solid var(--line); border-radius: 8px; color: var(--dim); vertical-align: 1px; }
+.tier-tag.tier-normal { color: #2f6fb5; border-color: #2f6fb5; }
+.tier-tag.tier-hard { color: var(--neg); border-color: var(--neg); }
+.tier-tag.tier-late { color: #8a3fb5; border-color: #8a3fb5; }
+.card.pending { opacity: .85; border-style: dashed; }

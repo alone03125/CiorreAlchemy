@@ -1,7 +1,7 @@
 /* 核心：状态、效果汇总、幸福度、产出计算、时间推进、存档、日志与通用工具 */
 
 var G = {
-  version: '0.4.12',
+  version: '0.5.1',
   s: null,          // 当前存档状态
   E: {},            // 当前生效的效果汇总
   happy: 100,       // 幸福度（百分数）
@@ -67,7 +67,7 @@ function newState() {
       demand: {}, sale: {}, staffSnack: {}, autoRefine: false, payIn: 'quill' },
     kitchen: { targets: {}, task: null, tasks: {}, manual: null, priority: null },
     farm: { plots: [], known: {}, autoFert: true, task: null, manual: null },
-    luxSeen: {}, luxHave: {},
+    luxSeen: {}, luxHave: {}, luxUse: true,
     market: { prog: 0, last: [] },
     rhasari: { joined: false, flame: 0, mood: 50, insultCd: 0, hinted: false },
     lysari: { visits: 0, rain: 0 },
@@ -77,7 +77,7 @@ function newState() {
     sky: { event: 0 },
     trade: { count: {}, rel: {}, unlocked: {}, caravans: [] },
     disp: { unlocked: { lunavite: true }, active: [], history: [], selDest: 'lunavite', selDragon: null },
-    comm: { qkey: -1, list: [], letter: 0, ups: {}, plumeBuys: 0, everGot: false, done: 0 },
+    comm: { qkey: -1, list: [], pending: [], letter: 0, ups: {}, plumeBuys: 0, everGot: false, done: 0 },
     alch: { slots: [], guard: false, last: null, heat: 50 },
     queue: [],
     ach: {},
@@ -222,13 +222,16 @@ function computeHappiness() {
   P.party = partyBonus();
   /* 贵重品：每种有库存的都提高幸福度（参照原版的奢侈品） */
   P.lux = 0;
-  LUXURIES.forEach(function (l) { if ((s.res[l.id] || 0) > 0) P.lux += l.happy; });
+  if (luxAllowed()) LUXURIES.forEach(function (l) { if ((s.res[l.id] || 0) > 0) P.lux += l.happy; });
   var h = 100;
   for (var k in P) h += P[k];
   G.happy = Math.max(25, h);
   G.happyParts = P;
 }
 
+/* 小龙能不能拿贵重品来玩：研究“珍藏清单”之前总是可以；研究后由小龙页的开关决定。
+ * 关掉时贵重品不再减少，也不再提高幸福度 */
+function luxAllowed() { var s = G.s; return !s.tech.lux_ledger || s.luxUse !== false; }
 function capOf(id) {
   var r = RES_MAP[id];
   if (!r) return Infinity;
@@ -281,7 +284,7 @@ function computeRates() {
     R.coins -= up;
     D.coins.push(['upkeep', -up]);
   }
-  if (n) LUXURIES.forEach(function (l) {
+  if (n && luxAllowed()) LUXURIES.forEach(function (l) {
     if ((s.res[l.id] || 0) <= 0) return;
     R[l.id] -= l.use * n;
     D[l.id].push(['luxuse', -l.use * n]);
@@ -302,7 +305,8 @@ function addRes(id, amt) {
   var s = G.s, v = s.res[id] || 0, cap = capOf(id);
   if (amt > 0) {
     if (v >= cap) return 0;
-    var nv = Math.min(cap, v + amt);
+    /* v0.5.1 仅翎鸾：一次获取超过上限时整笔保留，不会损耗；之后在降回上限以下之前，不能再获得任何翎鸾 */
+    var nv = id === 'quill' ? v + amt : Math.min(cap, v + amt);
     s.res[id] = nv;
     G.flowAcc[id] = (G.flowAcc[id] || 0) + (nv - v);
     return nv - v;
@@ -455,6 +459,7 @@ function onDay() {
   demandDaily();
   farmDaily();
   skyDaily();
+  commDaily();
   /* 贵重品用光时提醒一次 */
   LUXURIES.forEach(function (l) {
     var have = (s.res[l.id] || 0) > 0;
@@ -563,6 +568,8 @@ function applyLoaded(data) {
   G.s = deepMerge(newState(), data);
   if (migrated) { migrateV2(G.s); G.notice = TXT.migrated; }
   renameLux(G.s);
+  /* v0.5.1：旧版的计数委托已取消，读档时清掉，第二天重新发 */
+  if (typeof commMigrate === 'function') commMigrate(G.s);
   G.s.v = SAVE_VERSION;
 }
 /* v0.3.1 把贵重品从“各种硬币”改成了各种闪亮的小东西，旧 id 的库存与记录搬到新 id 上 */
