@@ -220,7 +220,7 @@ ancient_scroll|古卷轴|Ancient Scroll|26|3|e|rel|g
 frostheart_tonic|冰心药剂|Frostheart Tonic|26|3|f|pot|
 static_gloves|静电手套|Static Gloves|26|4|p|too|
 scorch_pepper|灼燃辣酱|Scorch Pepper Sauce|26|5|s|con|
-ciorre_blend|Ciorre 特调|Ciorre's Signature Blend|26|5|n|con|x
+ciorre_blend|Kirro 特调|Kirro's Signature Blend|26|5|n|con|x
 
 onyx|缟玛瑙|Onyx|27|1|c|min|g
 ironwood|铁木|Ironwood|27|2|t|flo|g

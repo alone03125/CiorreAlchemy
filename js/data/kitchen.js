@@ -127,7 +127,7 @@ var FOODS = [
   { id: 'starlit_tea', kind: 'drink', st: 'bar', inp: { tea: 3, orange: 2, honey: 2 }, price: 12, zh: '星誓花茶', en: 'Starlit Blossom Tea',
     desc: { zh: '橙花和蜂蜜在杯底沉成一小片星空。适合许愿，不保证实现。', en: 'Blossom and honey settle into a tiny starry sky. Good for wishes. No guarantees.' } },
   { id: 'caramel_latte', kind: 'drink', st: 'bar', inp: { beans: 4, milk: 2, caramel_sauce: 1 }, price: 14, zh: '焦糖拿铁', en: 'Caramel Latte',
-    desc: { zh: '焦糖在奶泡上绕了一圈。顾客说像龙鳞，Ciorre 说像猫毛。', en: 'A caramel swirl on the foam. Customers say it looks like a scale. You say it looks like cat fur.' } },
+    desc: { zh: '焦糖在奶泡上绕了一圈。顾客说像龙鳞，Kirro 说像猫毛。', en: 'A caramel swirl on the foam. Customers say it looks like a scale. You say it looks like cat fur.' } },
   { id: 'ember_shot', kind: 'drink', st: 'torch', inp: { roasted_beans: 2 }, flame: 1, price: 15, zh: '余烬浓缩', en: 'Ember Espresso',
     desc: { zh: '由 Rhasari 亲口加热。喝下去之后，打嗝会冒烟。', en: 'Heated personally by Rhasari. Afterward, your burps come out smoking.' } },
   { id: 'mocha', kind: 'drink', st: 'bar', inp: { beans: 4, milk: 2, cocoa_sauce: 1 }, price: 16, zh: '摩卡', en: 'Mocha',

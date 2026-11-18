@@ -23,14 +23,13 @@ var TXT = {
     transmute: { zh: '你终于理解了元素之间的嬗变。工坊的炼金炉第一次真正地亮了起来。',
       en: 'You finally understand how the elements transmute. For the first time, the workshop\'s alchemy furnace truly lights up.' },
     monthStart: { zh: '{0}到了。', en: '{0} has begun.' },
-    quarterEnd: { zh: '季度结束了。Rakuakira 有点抱歉地把没完成的委托收了回去：“没关系的，下个季度，我们再一起加油。”',
-      en: 'The quarter is over. Rakuakira gathers up the unfinished commissions, a little apologetically. "It is all right. Let us do our best together next quarter."' },
+    quarterEnd: { zh: '季度结束，未完成的委托已由 Rakuakira 收回。', en: 'The quarter is over. Rakuakira has collected the unfinished commissions.' },
     phase: { zh: '{0}。{1}', en: '{0}. {1}' },
     grow: { zh: '小龙们又长大了一点。', en: 'The dragonlings have grown a little.' },
     offline: { zh: '你离开了 {0}。小龙们一直在照看工坊。', en: 'You were away for {0}. The dragonlings kept the workshop running.' }
   },
 
-  /* Rakuakira：性格随和，说话软软的，但很有原则 */
+  /* Rakuakira：性格随和，说话软，话不多 */
   raku: {
     snack: [
       { zh: 'Rakuakira 落在窗台上，小口小口地吃完了{0}。“谢谢款待。这些消息，只说给你一个人听哦。”情报 +{1}。',
@@ -52,32 +51,21 @@ var TXT = {
       { zh: '“唔，没有点心也不要紧。”Rakuakira 轻声说，“不过我会有一点点失落，这个也要如实告诉你。”情报 +{1}。',
         en: '"Mm, no snack is fine," Rakuakira says softly. "But I am a tiny bit disappointed, and I should tell you that honestly too." Intel +{1}.' }
     ],
-    letter: { zh: 'Rakuakira 送来了 Ayrelia 的信，还细心地把信封上的灰掸掉了。“这是本季度的委托，麻烦你签收一下。”',
-      en: 'Rakuakira delivers Ayrelia\'s letter, carefully brushing the dust off the envelope first. "This quarter\'s commissions. Could you sign for them, please?"' }
+    letter: { zh: 'Rakuakira 送来了 Ayrelia 本季度的委托。', en: 'Rakuakira brings Ayrelia\'s commissions for this quarter.' }
   },
 
   /* Ayrelia：强大、孤独、傲娇，口癖是“哼” */
   ayrelia: [
-    { zh: '哼，别误会。我才不缺这些东西，只是 Rakuakira 说你的工坊很热闹，我就顺便……看看而已。',
-      en: 'Hmph. Do not get the wrong idea. I lack none of these things. Rakuakira said your workshop is lively, so I am just... taking a look.' },
-    { zh: '本季度的委托写在下面了。做不完也没关系，反正我也没有很期待。……做完了的话，我会记住的。哼。',
-      en: 'This quarter\'s requests are below. It does not matter if you cannot finish them. I am not looking forward to it or anything. ...If you do finish, I will remember. Hmph.' },
-    { zh: '你问我为什么总找 Rakuakira 说话？哼，因为她会认真听，并且从不假装听懂。你就做不到。',
-      en: 'You ask why I always talk to Rakuakira? Hmph. Because she listens properly and never pretends to understand. Unlike you.' },
-    { zh: '强大的意思就是不需要任何帮助。我一直是这么想的。所以这些委托只是我的一点任性，你不必放在心上。哼。',
-      en: 'To be strong is to need no help. I have always believed that. So these requests are just a small whim of mine. Do not take them to heart. Hmph.' },
-    { zh: '昨晚我又看见你工坊的炉火了，小小的，很亮。哼，我才没有特意去看，只是刚好飞过而已。',
-      en: 'I saw your workshop\'s fire again last night. Very small, very bright. Hmph. I was not looking on purpose. I just happened to fly past.' },
-    { zh: '火焰燃尽之后，会留下什么呢？……哼，跟你说这些做什么。快去干活。',
-      en: 'What remains after a flame burns out? ...Hmph. Why am I telling you this. Get back to work.' },
-    { zh: '星誓月的夜空最澄澈，古时的龙族都在那样的夜里立誓。我没有什么需要立誓的。哼，你也别想让我对你立什么誓。',
-      en: 'The skies of Astriel are the clearest; dragons of old swore their oaths on such nights. I have nothing to swear. Hmph. And do not expect me to swear anything to you.' },
-    { zh: '一个人的时候，时间又长又安静。……这一句你就当没看见。哼。',
-      en: 'When one is alone, time is long and quiet. ...Pretend you did not read that line. Hmph.' },
-    { zh: 'Rakuakira 说你上次的点心很好吃。哼，她的口味一向很普通，这说明不了什么。……下次多放一份。',
-      en: 'Rakuakira says your last snack was delicious. Hmph. Her taste is very ordinary, so that proves nothing. ...Put out an extra one next time.' },
-    { zh: '风会把灰烬带走，但带不走曾经燃烧过的事实。哼，这种话我只写一次，别让 Rakuakira 念出来。',
-      en: 'The wind carries ash away, but not the fact that something once burned. Hmph. I am writing this only once. Do not let Rakuakira read it aloud.' }
+    { zh: '哼，别误会。我不缺这些东西，只是想看看你的工坊能做到什么程度。', en: 'Hmph. Do not misunderstand. I lack none of these things. I only want to see what your workshop can do.' },
+    { zh: '本季度的委托在下面。做不完也无妨。', en: 'This quarter\'s requests are below. It does not matter if you cannot finish them.' },
+    { zh: '我找 Rakuakira 说话，是因为她会认真听。哼。', en: 'I talk to Rakuakira because she listens properly. Hmph.' },
+    { zh: '强大的意思是不需要帮助。这些委托只是我的一点任性。', en: 'To be strong is to need no help. These requests are only a whim of mine.' },
+    { zh: '昨晚又看见你工坊的炉火了。很小，很亮。', en: 'I saw your workshop\'s fire again last night. Very small, very bright.' },
+    { zh: '火焰燃尽之后，会留下什么？……哼，快去干活。', en: 'What remains after a flame burns out? ...Hmph. Get to work.' },
+    { zh: '星誓月的夜空最澄澈，古时的龙族都在那样的夜里立誓。我没有什么需要立誓的。', en: 'The skies of Astriel are the clearest; dragons of old swore their oaths on such nights. I have nothing to swear.' },
+    { zh: '一个人的时候，时间又长又安静。', en: 'Alone, time is long and quiet.' },
+    { zh: 'Rakuakira 说你的点心不错。她的口味一向普通，这说明不了什么。哼。', en: 'Rakuakira says your snacks are good. Her taste is ordinary, so that proves nothing. Hmph.' },
+    { zh: '风会把灰烬带走，但带不走曾经燃烧过的事实。', en: 'The wind carries ash away, but not the fact that something once burned.' }
   ],
   lysari: {
     arrive: [
@@ -182,28 +170,30 @@ var TXT = {
   },
 
   comm: {
-    goods: { t: { zh: '尝尝你的{0}', en: 'A taste of your {0}' },
-      d: { zh: '“哼，听说你的{0}还不错？送 {1} 份来，我倒要看看到底有多不错。”请交给 Rakuakira 带去。', en: '"Hmph. I hear your {0} is not bad? Send {1}. I will see for myself just how not bad it is." Hand them to Rakuakira.' } },
-    serve: { t: { zh: '热闹的温度', en: 'The warmth of a crowd' },
-      d: { zh: '本季度招待 {0} 位顾客。“热闹是什么样子的？哼，我只是随便问问。”', en: 'Serve {0} customers this quarter. "What does liveliness feel like? Hmph. I am only asking in passing."' } },
+    goods: { t: { zh: '送来{0}', en: 'Deliver {0}' },
+      d: { zh: '交付 {1} 份{0}。{0}在后厨制作，库存够了就能提交，提交后从库存扣除。', en: 'Deliver {1} {0}. It is made in the kitchen; you can submit once you have enough in stock, and it is taken from your stock.' } },
+    serve: { t: { zh: '招待顾客', en: 'Serve customers' },
+      d: { zh: '本季度招待 {0} 位顾客。从收到委托时开始计数，店员和你亲自招待的都算。达成后点“领取”。', en: 'Serve {0} customers this quarter. Counting starts when the commission arrives; customers served by clerks and by you both count. Claim the reward once done.' } },
     firewood: { t: { zh: 'Rakuakira 的窝', en: 'Rakuakira\'s Nest' },
-      d: { zh: 'Rakuakira 小声说，这一份不是 Ayrelia 的委托，是她自己的：窝有点漏风了，想要柴薪 ×{0}。“这是我自己的小请求，不算在 Ayrelia 的委托里哦。”', en: 'Rakuakira says quietly that this one is not from Ayrelia but from herself: her nest is a little draughty, and she would like {0} Firewood. "This is just a small favour of my own. It does not count as one of Ayrelia\'s."' } },
+      d: { zh: '交付柴薪 ×{0}，用来修补 Rakuakira 漏风的窝。这一份是 Rakuakira 自己的请求。提交后从库存扣除。', en: 'Deliver {0} Firewood to patch Rakuakira\'s draughty nest. This one is Rakuakira\'s own request. It is taken from your stock when you submit.' } },
     item: { t: { zh: '寻物：{0}', en: 'Wanted: {0}' },
-      d: { zh: '带来 {0} ×{1}。“哼，我自己也找得到，只是懒得下山而已。”', en: 'Bring {0} x{1}. "Hmph. I could find it myself. I simply cannot be bothered to come down the mountain."' } },
-    element: { t: { zh: '{0}的余韵', en: 'Echoes of {0}' },
-      d: { zh: '带来 {1} 件{0}属性、炼金等级不低于 {2} 的物品。“太差的我可不收，哼。”', en: 'Bring {1} {0}-element item(s) of level {2} or higher. "I will not accept anything shoddy. Hmph."' } },
-    rarity: { t: { zh: '稀有之物', en: 'Something rare' },
-      d: { zh: '带来 {0} 件稀有度不低于 Rare {1} 的物品。“普通的东西我见得太多了。哼。”', en: 'Bring {0} item(s) of Rare {1} or higher. "I have seen far too many ordinary things. Hmph."' } },
-    dispatch: { t: { zh: '替我看看{0}', en: 'Look at {0} for me' },
-      d: { zh: '本季度完成一次前往{0}的派遣。“替我看看那边的风向。哼，我只是懒得自己飞一趟。”', en: 'Complete an expedition to {0} this quarter. "Tell me which way the wind blows there. Hmph. I just do not feel like flying there myself."' } },
-    alchemy: { t: { zh: '炉火不熄', en: 'Keep the furnace burning' },
-      d: { zh: '本季度完成 {0} 次炼金。“别让炉火熄了。哼，我是说你的炉火。”', en: 'Perform {0} transmutations this quarter. "Do not let the fire go out. Hmph. Your fire, I mean."' } },
-    caramel: { t: { zh: '她的火焰', en: 'Her little flame' },
-      d: { zh: '本季度制作 {0} 份焦糖布丁。“另一只火焰之鸟……哼，我只是有一点点好奇。”', en: 'Make {0} caramel puddings this quarter. "The other bird of flame... Hmph. I am only a tiny bit curious."' } },
-    harvest: { t: { zh: '草地的味道', en: 'A taste of the meadow' },
-      d: { zh: '本季度收获 {0} 次作物。“我很久没闻过新翻的泥土了。哼，这不是想念，只是陈述。”', en: 'Harvest crops {0} times this quarter. "It has been a long time since I smelled fresh soil. Hmph. That is a statement, not homesickness."' } },
-    window: { t: { zh: '橱窗里的东西', en: 'What is in the window' },
-      d: { zh: '本季度从橱窗卖出 {0} 件半成品。“Rakuakira 说你的橱窗摆得很好看。哼，我又没问她。”', en: 'Sell {0} prepared goods from the window this quarter. "Rakuakira says your window looks very nice. Hmph. Not that I asked her."' } },
+      d: { zh: '交付 {0} ×{1}。这是能在派遣中采集到的物品，也可能从集市淘到。提交后从仓库扣除。', en: 'Deliver {0} x{1}. It can be gathered on expeditions and sometimes turns up at the market. It is taken from your storage when you submit.' } },
+    element: { t: { zh: '{0}属性物品', en: '{0}-element items' },
+      d: { zh: '交付 {1} 件{0}属性、炼金等级不低于 {2} 的物品，种类不限。', en: 'Deliver {1} {0}-element items of level {2} or higher; any kind will do.' } },
+    rarity: { t: { zh: '稀有物品', en: 'Rare items' },
+      d: { zh: '交付 {0} 件稀有度不低于 Rare {1} 的物品，种类不限。', en: 'Deliver {0} items of Rare {1} or higher; any kind will do.' } },
+    dispatch: { t: { zh: '派遣到{0}', en: 'Expedition to {0}' },
+      d: { zh: '本季度完成一次前往{0}的派遣。小龙在季度结束前回来才算数，最好早点出发。', en: 'Complete one expedition to {0} this quarter. It only counts if the dragonling returns before the quarter ends, so send one early.' } },
+    alchemy: { t: { zh: '持续炼金', en: 'Keep transmuting' },
+      d: { zh: '本季度完成 {0} 次炼金。从收到委托时开始计数，固定配方和失败变成杂质的也都算。', en: 'Perform {0} transmutations this quarter. Counting starts when the commission arrives; fixed recipes and failures that turn into Impurity count too.' } },
+    caramel: { t: { zh: '焦糖布丁', en: 'Caramel puddings' },
+      d: { zh: '本季度制作 {0} 份焦糖布丁。从收到委托时开始计数，厨师做的和你亲手做的都算。', en: 'Make {0} caramel puddings this quarter. Counting starts when the commission arrives; puddings made by cooks and by you both count.' } },
+    harvest: { t: { zh: '收获作物', en: 'Harvest crops' },
+      d: { zh: '本季度在草地收获 {0} 次作物，每收一块地算一次。从收到委托时开始计数。', en: 'Harvest crops {0} times this quarter; each plot harvested counts once. Counting starts when the commission arrives.' } },
+    window: { t: { zh: '橱窗销售', en: 'Window sales' },
+      d: { zh: '本季度从橱窗卖出 {0} 件半成品。从收到委托时开始计数。', en: 'Sell {0} prepared goods from the window this quarter. Counting starts when the commission arrives.' } },
+    product: { t: { zh: '炼金产物：{0}', en: 'Alchemy product: {0}' },
+      d: { zh: '交付 1 件{0}（Lv {1}，{2}）。这是 25 级以上的普通炼金产物，可以在自由炼金中炼出，也可能从集市淘到。提交后从仓库扣除。', en: 'Deliver one {0} (Lv {1}, {2}). It is an ordinary alchemy product above level 25; you can transmute it or find it at the market. It is taken from your storage when you submit.' } },
     done: { zh: '委托完成：{0}。获得 {1}。', en: 'Commission complete: {0}. Received {1}.' }
   },
 

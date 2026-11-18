@@ -310,7 +310,7 @@ var BUILDINGS = [
   { id: 'tearoom', cat: 'life', zh: '茶室', en: 'Tea Room', cost: { firewood: 300, ore: 300, coins: 2000 }, ratio: 1.15,
     eff: { happiness: 2 },
     desc: { zh: '小龙们下班后喝茶的地方。幸福度 +2%。', en: 'Where dragonlings have tea after work. Happiness +2%.' },
-    flavor: { zh: '茶杯是按小龙的爪子尺寸订做的，所以 Ciorre 只能用碟子喝。', en: 'The cups fit dragonling claws, so you drink from the saucer.' },
+    flavor: { zh: '茶杯是按小龙的爪子尺寸订做的，所以 Kirro 只能用碟子喝。', en: 'The cups fit dragonling claws, so you drink from the saucer.' },
     req: function (s) { return !!s.tech.tea_party; } },
   { id: 'snackshelf', cat: 'life', zh: '员工零食柜', en: 'Staff Snack Shelf', cost: { firewood: 80, ore: 40 }, ratio: 1, max: 1,
     eff: {},
@@ -378,7 +378,7 @@ var BUILDINGS = [
     req: function (s) { return !!s.tech.storage; } },
 
   /* 工坊 */
-  { id: 'workshop', cat: 'shop', zh: 'Ciorre 的炼金工坊', en: 'Ciorre\'s Alchemy Workshop', cost: { firewood: 100, ore: 400 }, ratio: 1,
+  { id: 'workshop', cat: 'shop', zh: 'Kirro 的炼金工坊', en: 'Kirro\'s Alchemy Workshop', cost: { firewood: 100, ore: 400 }, ratio: 1,
     allCoins: 2000, max: 1,
     eff: {},
     desc: { zh: '花光全部积蓄（至少 2000 硬币），在龙巢里开一家炼金工坊。解锁工坊、店员、情报与委托。', en: 'Spend ALL your coins (at least 2000) to open an alchemy workshop in Dragonest. Unlocks the Workshop, Clerks, Intel and Commissions.' },
@@ -402,7 +402,7 @@ var BUILDINGS = [
   { id: 'signboard', cat: 'shop', zh: '广告牌', en: 'Signboard', cost: { firewood: 120, coins: 800 }, ratio: 1.25,
     eff: { windowChance: 0.02, displayChance: 0.015, custRate: 0.05 },
     desc: { zh: '让路过的龙多看橱窗和展柜一眼。', en: 'Makes passing dragons take a second look at the window and the display case.' },
-    flavor: { zh: '上面画着 Ciorre 的笑脸。画得不太像，但很有精神。', en: 'It shows your smiling face. Not a good likeness, but full of spirit.' },
+    flavor: { zh: '上面画着 Kirro 的笑脸。画得不太像，但很有精神。', en: 'It shows your smiling face. Not a good likeness, but full of spirit.' },
     req: function (s) { return !!s.tech.advertising; } },
   { id: 'tradepost', cat: 'shop', zh: '商栈', en: 'Trading Post', cost: { firewood: 500, ore: 200, coins: 1000 }, ratio: 1.15,
     eff: { tradeRatio: 0.015 },
@@ -496,7 +496,7 @@ var BUILDINGS = [
   { id: 'beehive', cat: 'farm', zh: '蜂箱', en: 'Beehive', cost: { firewood: 50, coins: 200 }, ratio: 1.2,
     eff: { 'prod.honey': 0.03 },
     desc: { zh: '产蜂蜜。', en: 'Produces honey.' },
-    flavor: { zh: '蜜蜂蜇不穿龙鳞，于是它们改为蜇 Ciorre。', en: 'The bees cannot sting through dragon scales, so they sting you instead.' },
+    flavor: { zh: '蜜蜂蜇不穿龙鳞，于是它们改为蜇 Kirro。', en: 'The bees cannot sting through dragon scales, so they sting you instead.' },
     req: function (s) { return !!s.tech.apiculture; } },
 
   /* 派遣 */
@@ -602,7 +602,7 @@ var TECHS = [
     desc: { zh: '摸清了摊主们把好东西藏在哪一层箱子底下。在集市淘宝时，有机会淘到贵重品。', en: 'You learn which crate bottom the stallholders hide the good stuff under. Market rummaging can now turn up treasures.' },
     req: function (s) { return !!s.flags.market && !!s.tech.hospitality; } },
   { id: 'wanderlust', zh: '旅行癖', en: 'Wanderlust', cost: { lore: 3000, quill: 576 },
-    desc: { zh: '承认吧，你就是想出去玩。解锁 Ciorre 的旅行。', en: 'Admit it, you just want to go out. Unlocks Ciorre\'s trips.' },
+    desc: { zh: '承认吧，你就是想出去玩。解锁 Kirro 的旅行。', en: 'Admit it, you just want to go out. Unlocks Kirro\'s trips.' },
     req: function (s) { return !!s.tech.courier; } },
   { id: 'drills', zh: '演武', en: 'Martial Drills', cost: { lore: 3000, ore: 1500 },
     desc: { zh: '解锁演武场。', en: 'Unlocks the Training Ground.' },
@@ -744,7 +744,7 @@ var FAVOR_UPS = [
 /* 派遣的路费（铜翎），按地点的远近分级 */
 var DEST_COST = { 1: 60, 2: 180, 3: 480, 4: 1440, 5: 3600 };
 
-/* Ciorre 每次旅行留下的“旅行见闻”带来的永久效果（每层） */
+/* Kirro 每次旅行留下的“旅行见闻”带来的永久效果（每层） */
 var MEMORY_EFF = { 'mult.coins': 0.05, custMult: 0.03, itemValue: 0.02 };
 
 /* 小龙名字 */

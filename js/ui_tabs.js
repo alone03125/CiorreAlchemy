@@ -898,7 +898,7 @@ function buildCommissions(el) {
     s.comm.list.forEach((c, i) => {
       const tx = commTexts(c);
       const card = h('div', { class: 'card' + (c.done ? ' done' : '') });
-      card.appendChild(h('div', { class: 'card-t', text: tx.t[LANG] }));
+      card.appendChild(h('div', { class: 'card-t', text: tx.t[LANG], tip: c.item && ITEMS[c.item] ? () => tipItem(c.item) : null }));
       card.appendChild(h('div', { class: 'card-d', text: tx.d[LANG] }));
       if (c.type === 'element' || c.type === 'rarity') card.appendChild(note(T('cm_auto_pick')));
       card.appendChild(liveText('div', () => c.done ? T('cm_done') : T('cm_progress', commProgress(c), c.need), 'card-p'));

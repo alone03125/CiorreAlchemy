@@ -3,7 +3,7 @@ var LANG = 'zh';
 
 var I18N = {
   zh: {
-    game_title: 'Ciorre 的炼金工坊',
+    game_title: 'Kirro 的炼金工坊',
     lnk_lang: 'English', lnk_dark: '夜间', lnk_light: '日间', lnk_pause: '暂停', lnk_resume: '继续', lnk_save: '保存', lnk_export: '导出', lnk_import: '导入', lnk_reset: '重置',
     confirm_reset: '确定要重置吗？所有进度都会消失。',
     tab_nest: '湖畔', tab_dragons: '小龙', tab_research: '研究', tab_workshop: '工坊', tab_meadow: '草地',
@@ -168,7 +168,7 @@ var I18N = {
     sell_one: '卖 1 个（{0}）', sell_all: '全卖', confirm_sell: '确定把 {1} 件 {0} 卖给猫头鹰商人吗？', to_display: '放入展柜',
 
     cm_letter: 'Ayrelia 的来信', cm_left: '本季度还剩 {0} 天。已完成委托 {1} 份。',
-    cm_note: '每个季度初，Rakuakira 会送来新的委托。季度结束时，未完成的委托会被收回，没有惩罚。',
+    cm_note: '每季度初 Rakuakira 送来新的委托：起初每季度 1 份，兑换青睐升级后最多 4 份。交付类委托凑齐后点“提交”，东西会被扣除；计数类委托从收到时开始计数，达成后点“领取”。季度结束时，未完成的委托被收回，没有惩罚。研究稳定火候之后，简单的委托会换成交付 1 件指定的 25 级以上炼金产物。',
     cm_auto_pick: '提交时会自动挑选价值最低的符合条件的物品。',
     cm_done: '已完成', cm_progress: '进度 {0} / {1}', cm_reward: '奖励：', cm_submit: '提交', cm_claim: '领取', cm_will_use: '将会提交',
     cm_favor: 'Ayrelia 的青睐', cm_favor_have: '青睐：{0}', owned_mark: '（已拥有）',
@@ -312,7 +312,7 @@ var I18N = {
   },
 
   en: {
-    game_title: 'Ciorre\'s Alchemy Workshop',
+    game_title: 'Kirro\'s Alchemy Workshop',
     lnk_lang: '中文', lnk_dark: 'Dark', lnk_light: 'Light', lnk_pause: 'Pause', lnk_resume: 'Resume', lnk_save: 'Save', lnk_export: 'Export', lnk_import: 'Import', lnk_reset: 'Reset',
     confirm_reset: 'Reset the game? All progress will be lost.',
     tab_nest: 'Lakeside', tab_dragons: 'Dragonlings', tab_research: 'Research', tab_workshop: 'Workshop', tab_meadow: 'Meadow',
@@ -476,7 +476,7 @@ var I18N = {
     sell_one: 'Sell 1 ({0})', sell_all: 'Sell all', confirm_sell: 'Sell {1} x {0} to the owl merchant?', to_display: 'Display',
 
     cm_letter: 'A letter from Ayrelia', cm_left: '{0} days left this quarter. Commissions completed: {1}.',
-    cm_note: 'At the start of each quarter Rakuakira brings new commissions. Unfinished ones are collected at the end of the quarter, with no penalty.',
+    cm_note: 'At the start of each quarter Rakuakira brings new commissions: 1 per quarter at first, up to 4 with Favor upgrades. Delivery commissions are submitted once you have everything, and the items are taken; counting commissions count from when they arrive and are claimed once reached. Unfinished ones are collected at the end of the quarter, with no penalty. After researching Steady Flame, the easy commissions are replaced by requests for one specific alchemy product above level 25.',
     cm_auto_pick: 'The lowest-value matching items are picked automatically.',
     cm_done: 'Completed', cm_progress: 'Progress {0} / {1}', cm_reward: 'Reward: ', cm_submit: 'Submit', cm_claim: 'Claim', cm_will_use: 'Will submit',
     cm_favor: 'Ayrelia\'s Favor', cm_favor_have: 'Favor: {0}', owned_mark: '(owned)',

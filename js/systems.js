@@ -283,7 +283,7 @@ function custPerDay() {
   return Math.max(0, base * Math.max(0.1, mult));
 }
 function queueCap() { return BASE_QUEUE + eff('queueCap'); }
-/* 招待进度每秒增长多少（1 = 招待完一位顾客）。Ciorre 不在店里时，没有人会顺手招待 */
+/* 招待进度每秒增长多少（1 = 招待完一位顾客）。Kirro 不在店里时，没有人会顺手招待 */
 function serveRate() { return (tripAway() ? 0 : 0.03) + workForce('clerk') * CLERK_SERVE; }
 /* 泊松分布：一段时间内到来的顾客数 */
 function poisson(lambda) {
@@ -615,7 +615,7 @@ function rakuVisit() {
   s.raku.last = { snack: !!snack, intel: intel, m: monthIdx() };
 }
 
-/* ========== Ciorre 的旅行 ========== */
+/* ========== Kirro 的旅行 ========== */
 /* v0.4 起旅行贵了很多：至少要攒够 10000 × 1.8 的 n 次方硬币，外加 2 金翎 × 1.8 的 n 次方路费 */
 function tripCost() { return Math.round(10000 * Math.pow(1.8, G.s.trip.count)); }
 /* 旅行还要带上翎鸾当路费 */
@@ -1088,8 +1088,26 @@ var COMM_TYPES = {
   caramel: {
     avail: function (s) { return !!s.rhasari.joined; },
     gen: function (s, st) { return { need: 3 + st, base: s.stats.caramel, rw: { renown: 4 + st, quill: Math.round(basePrice('caramel') * (3 + st)), favor: favEasy(st) } }; }
+  },
+  /* v0.4.12 后期委托：1 件指定的 26 级以上普通炼金产物。只在后期顶替简单委托，不会单独抽到。
+   * 等级上限随玩家见过的最高等级普通物品提高（至少 30，最多 40），按稀有度权重抽，见过的物品权重 ×2 */
+  product: {
+    avail: function (s) { return !!s.tech.transmutation; },
+    gen: function (s, st, list) {
+      var taken = (list || []).filter(function (c) { return c.type === 'product'; }).map(function (c) { return c.item; });
+      var top = 30;
+      for (var id in s.seen) { var x = ITEMS[id]; if (x && !x.x && x.lv > top) top = x.lv; }
+      var hi = Math.min(COMM_PRODUCT_MAX, top);
+      var pool = ITEM_LIST.filter(function (it) { return !it.x && it.lv >= COMM_PRODUCT_MIN && it.lv <= hi && taken.indexOf(it.id) < 0; });
+      var it = wpick(pool.map(function (it) { return [it, RARITY.weight[it.r] * (s.seen[it.id] ? 2 : 1)]; }));
+      return { item: it.id, need: 1, rw: { quill: itemValue(it.id) * 2, renown: 5 + st, favor: favHard(st) } };
+    }
   }
 };
+var COMM_PRODUCT_MIN = 26, COMM_PRODUCT_MAX = 40;
+/* 简单委托。研究“稳定火候”后进入后期，抽到这些时改为发一份指定炼金产物的委托 */
+var COMM_EASY = ['goods', 'serve', 'firewood', 'harvest', 'window', 'caramel'];
+function commLate() { return !!G.s.tech.steady1; }
 /* 每季度的委托数：开始只有 1 份，可用青睐兑换“第二封信”等升级，最多 4 份 */
 function commCount() { return Math.min(4, 1 + Math.floor(eff('commSlots'))); }
 function newQuarter(fromBuild) {
@@ -1099,13 +1117,14 @@ function newQuarter(fromBuild) {
   s.comm.qkey = qk;
   s.comm.letter = randInt(0, TXT.ayrelia.length - 1);
   var st = progStage();
-  var types = Object.keys(COMM_TYPES).filter(function (k) { return COMM_TYPES[k].avail(s); });
-  var n = commCount();
+  var types = Object.keys(COMM_TYPES).filter(function (k) { return k !== 'product' && COMM_TYPES[k].avail(s); });
+  var n = commCount(), late = commLate();
   var list = [], bag = types.slice();
   for (var i = 0; i < n && types.length; i++) {
     if (!bag.length) bag = types.slice();
     var t = bag.splice(Math.floor(Math.random() * bag.length), 1)[0];
-    var c = COMM_TYPES[t].gen(s, st);
+    if (late && COMM_EASY.indexOf(t) >= 0) t = 'product';
+    var c = COMM_TYPES[t].gen(s, st, list);
     c.type = t;
     c.done = false;
     list.push(c);
@@ -1118,6 +1137,7 @@ function commTexts(c) {
   switch (c.type) {
     case 'goods': t = fmtPair(tp.t, [RES_MAP[c.good]]); d = fmtPair(tp.d, [RES_MAP[c.good], c.need]); break;
     case 'item': t = fmtPair(tp.t, [itemPair(c.item)]); d = fmtPair(tp.d, [itemPair(c.item), c.need]); break;
+    case 'product': t = fmtPair(tp.t, [itemPair(c.item)]); d = fmtPair(tp.d, [itemPair(c.item), ITEMS[c.item].lv, 'R' + ITEMS[c.item].r]); break;
     case 'element': t = fmtPair(tp.t, [ELEMENTS[c.el]]); d = fmtPair(tp.d, [ELEMENTS[c.el], c.need, c.minLv]); break;
     case 'rarity': t = fmtPair(tp.t, []); d = fmtPair(tp.d, [c.need, c.minR]); break;
     case 'dispatch': t = fmtPair(tp.t, [DEST_MAP[c.dest]]); d = fmtPair(tp.d, [DEST_MAP[c.dest]]); break;
@@ -1148,7 +1168,7 @@ function commProgress(c) {
   switch (c.type) {
     case 'goods': return Math.min(c.need, Math.floor(s.res[c.good] || 0));
     case 'firewood': return Math.min(c.need, Math.floor(s.res.firewood));
-    case 'item': return Math.min(c.need, s.inv[c.item] || 0);
+    case 'item': case 'product': return Math.min(c.need, s.inv[c.item] || 0);
     case 'element': case 'rarity': return commPickItems(c).n;
     case 'serve': return Math.min(c.need, s.stats.served - c.base);
     case 'harvest': return Math.min(c.need, s.stats.harvests - c.base);
@@ -1159,7 +1179,7 @@ function commProgress(c) {
   }
   return 0;
 }
-function commIsSubmit(c) { return ['goods', 'firewood', 'item', 'element', 'rarity'].indexOf(c.type) >= 0; }
+function commIsSubmit(c) { return ['goods', 'firewood', 'item', 'product', 'element', 'rarity'].indexOf(c.type) >= 0; }
 function commReward(c) {
   var m = 1 + eff('commReward'), out = {};
   for (var k in c.rw) out[k] = k === 'favor' ? c.rw[k] : Math.round(c.rw[k] * m);
@@ -1178,7 +1198,7 @@ function completeComm(i) {
   if (!c || c.done || commProgress(c) < c.need) return;
   if (c.type === 'goods') addRes(c.good, -c.need);
   else if (c.type === 'firewood') addRes('firewood', -c.need);
-  else if (c.type === 'item') removeItem(c.item, c.need);
+  else if (c.type === 'item' || c.type === 'product') removeItem(c.item, c.need);
   else if (c.type === 'element' || c.type === 'rarity') {
     var pk = commPickItems(c).picked;
     for (var id in pk) removeItem(id, pk[id]);
