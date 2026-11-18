@@ -740,13 +740,13 @@ var FAVOR_UPS = [
     desc: { zh: '“哼，写信又不费什么力气。”每季度的委托达到 4 份。', en: '"Hmph. Writing letters takes no effort at all." Commissions reach 4 per quarter.' } },
   /* v0.4.11 后期升级：基础资源（硬币、翎鸾、柴薪、矿石、学识、肥料）的储量上限翻倍，独立乘区，在其他加成都算完之后再乘 */
   { id: 'amber', zh: '琥珀枝', en: 'Amber Branch', cost: 240, need: 'letter4', eff: { capMultBasic: 1 },
-    desc: { zh: '散发着不会消失的温度，残留着龙族的言灵（kotodama）气息，似乎直接与Ayrelia本龙所处的空间相通。', en: 'It gives off a warmth that never fades and still carries a trace of draconic kotodama, the power of spoken words. It seems to open straight onto the space where Ayrelia, in person, resides.' } },
+    desc: { zh: '散发着不会消失的温度，残留着龙族的言灵气息，似乎直接与Ayrelia本龙所处的空间相通。', en: 'It gives off a warmth that never fades and still carries a trace of draconic kotodama, the power of spoken words. It seems to open straight onto the space where Ayrelia, in person, resides.' } },
   { id: 'plume', zh: '求一片落羽', en: 'Ask for a Fallen Plume', cost: 60, repeat: 30, item: 'ayrelia_plume',
     desc: { zh: '“掉下来的羽毛而已，你要就拿去。哼。”获得一片 Ayrelia 的落羽（Lv 48，Rare 6）。每次兑换后价格 +30。', en: '"It is only a feather that fell off. Take it if you want. Hmph." Receive one of Ayrelia\'s Fallen Plumes (Lv 48, Rare 6). Price +30 each time.' } }
 ];
 
 /* 派遣的路费（铜翎），按地点的远近分级 */
-var DEST_COST = { 1: 60, 2: 180, 3: 480, 4: 1440, 5: 3600 };
+var DEST_COST = { 1: 60, 2: 180, 3: 480, 4: 1080, 5: 1920 };
 
 /* Kirro 每次旅行留下的“旅行见闻”带来的永久效果（每层） */
 var MEMORY_EFF = { 'mult.coins': 0.05, custMult: 0.03, itemValue: 0.02 };
@@ -762,13 +762,13 @@ var DRAGON_NAMES = ('Ember Pip Sorrel Quill Bramble Cinder Tansy Moss Flint Wren
 
 /* 顾客种类（用于文案） */
 var CUSTOMERS = [
-  { zh: '小地龙', en: 'a little drake' },
+  { zh: '一只小猫头鹰', en: 'a little owl' },
   { zh: '小飞龙', en: 'a young wyvern' },
   { zh: '刚破壳的雏龙', en: 'a freshly hatched dragonling' },
-  { zh: '水蛇龙宝宝', en: 'a baby water serpent' },
-  { zh: '苔背小龙', en: 'a mossback dragonling' },
-  { zh: '蕨叶小龙', en: 'a fernwing dragonling' },
-  { zh: '烬痕协来的小火龙', en: 'a little fire dragon from Jinhen' },
-  { zh: '苍阙协来的小冰龙', en: 'a little ice dragon from Cangque' },
-  { zh: '迷路的猫头鹰商人', en: 'a lost owl merchant' }
+  { zh: '一只兔子幼崽', en: 'a baby rabbit' },
+  { zh: '一只夜枭', en: 'a mossback dragonling' },
+  { zh: '一只小地鼠', en: 'a mole' },
+  { zh: '烬痕来的小火龙', en: 'a little fire dragon from Jinhen' },
+  { zh: '苍阙来的小冰龙', en: 'a little ice dragon from Cangque' },
+  { zh: '猫头鹰商人', en: 'a owl merchant' }
 ];

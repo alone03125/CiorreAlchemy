@@ -54,7 +54,7 @@ var TXT = {
     letter: { zh: 'Rakuakira 送来了 Ayrelia 本季度的委托。', en: 'Rakuakira brings Ayrelia\'s commissions for this quarter.' }
   },
 
-  /* Ayrelia：强大、孤独、傲娇，口癖是“哼” */
+  /* Ayrelia：强大、孤独、傲娇 */
   ayrelia: [
     { zh: '哼，别误会。我不缺这些东西，只是想看看你的工坊能做到什么程度。', en: 'Hmph. Do not misunderstand. I lack none of these things. I only want to see what your workshop can do.' },
     { zh: '本季度的委托在下面。做不完也无妨。', en: 'This quarter\'s requests are below. It does not matter if you cannot finish them.' },
@@ -171,17 +171,17 @@ var TXT = {
 
   comm: {
     basic: { t: { zh: '送来{0}', en: 'Deliver {0}' },
-      d: { zh: '交付{0} {1}。数量按你当前的储量上限定，提交后立即从库存扣除。', en: 'Deliver {1} {0}. The amount is based on your current storage limit; it is taken from your stock as soon as you submit.' } },
+      d: { zh: '需要一些基础物资，交付{0} {1}。', en: 'Need some basic supplies. Deliver {1} {0}.' } },
     goods: { t: { zh: '送来{0}', en: 'Deliver {0}' },
-      d: { zh: '交付{0} ×{1}。在后厨制作，提交后立即从库存扣除。', en: 'Deliver {0} x{1}. It is made in the kitchen and taken from your stock as soon as you submit.' } },
+      d: { zh: '你的点心看起来不错，给我尝尝{0} ×{1}。', en: 'Your snacks look good—let me have a taste. Deliver {0} ×{1}.' } },
     lux: { t: { zh: '贵重品：{0}', en: 'Treasure: {0}' },
-      d: { zh: '交付贵重品{0} ×{1}。贵重品来自派遣、贸易和集市。提交后立即从库存扣除，小龙就玩不到这些了。', en: 'Deliver {1} {0}. Treasures come from expeditions, trade and the market. They are taken from your stock as soon as you submit, so the dragonlings can no longer play with them.' } },
+      d: { zh: '交付贵重品{0} ×{1}。真的要给吗？小龙就玩不到这些了。', en: 'Deliver treasure {0} ×{1}. Are you sure you want to give it away? The dragonlings won\'t get to play with it anymore.' } },
     item: { t: { zh: '寻物：{0}', en: 'Wanted: {0}' },
-      d: { zh: '交付{0} ×{1}（Lv {2}，{3}）。可以在派遣中采集，也可能从集市淘到或在炼金中得到。提交后立即从仓库扣除。', en: 'Deliver {0} x{1} (Lv {2}, {3}). It can be gathered on expeditions, found at the market or transmuted. It is taken from your storage as soon as you submit.' } },
+      d: { zh: '喂，我的 {0} 找不到了，帮我捎 {1} 个呗（Lv {2}，{3}）。', en: 'Hey, I can\'t find my {0}. Bring me {1} of them, will you? (Lv {2}, {3}).' } },
     lend: { t: { zh: '借一只小龙', en: 'Lend a dragonling' },
-      d: { zh: '借出 1 只小龙 {0} 天：战斗等级不低于 {1}，成长等级不低于 {2}，属性为{3}之一（领头龙不能借）。提交后它立即离岗，Rakuakira 下次来时带它去 Ayrelia 那里，期满后带它回来，同时带回奖励。', en: 'Lend one dragonling for {0} days: combat level {1} or higher, growth level {2} or higher, element one of {3} (not the lead dragonling). It leaves its job as soon as you submit; Rakuakira takes it to Ayrelia on her next visit and brings it back with the reward when the time is up.' } },
+      d: { zh: '喂，把你的小龙借我用 {0} 天，要求战斗等级不低于 {1}，成长等级不低于 {2}，属性为{3}之一。', en: 'Hey, lend me one of your dragonlings for {0} days. It must have combat level {1} or higher, growth level {2} or higher, and an element among {3} (not the lead dragonling). It leaves its job as soon as you submit; Rakuakira takes it to Ayrelia on her next visit and brings it back with the reward when the time is up.' } },
     product: { t: { zh: '炼金产物：{0}', en: 'Alchemy product: {0}' },
-      d: { zh: '交付 1 件{0}（Lv {2}，{3}）。这是 25 级以上的普通炼金产物，可以在自由炼金中炼出，也可能从集市淘到。提交后立即从仓库扣除。', en: 'Deliver one {0} (Lv {2}, {3}). It is an ordinary alchemy product above level 25; you can transmute it or find it at the market. It is taken from your storage as soon as you submit.' } },
+      d: { zh: '喂，我的 {0} 找不到了，帮我捎一个呗（Lv {2}，{3}）。', en: 'Hey, I can\'t find my {0}. Bring me one, will you? (Lv {2}, {3}).' } },
     sent: { zh: '已交付“{0}”，等 Rakuakira 下次来时取走。', en: 'Delivered "{0}". Rakuakira will collect it on her next visit.' },
     taken: { zh: 'Rakuakira 取走了“{0}”的东西，下次来时带回奖励。', en: 'Rakuakira collects the delivery for "{0}" and will bring the reward next time.' },
     lentGo: { zh: 'Rakuakira 带着 {0} 去了 Ayrelia 那里。', en: 'Rakuakira takes {0} to Ayrelia.' },
