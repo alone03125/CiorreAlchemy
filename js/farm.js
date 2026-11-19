@@ -373,3 +373,22 @@ function manualCookWork(id, dt) {
   }
 }
 function manualCookProg(id) { var m = G.s.kitchen.manual; return m && m.id === id ? m.prog : 0; }
+/* v0.5.2：灶台上没人管的半成品（键不是在岗厨师的 id），可以按住亲手做完。
+ * 速度与按住“制作”相同；这一样的库存满了就不能做完，免得做出来没地方放 */
+function leftTask(key) {
+  var s = G.s, t = (s.kitchen.tasks || {})[key];
+  if (!t || t.done) return null;
+  var d = s.dragons.find(function (x) { return String(x.id) === String(key); });
+  if (d && !d.away && d.job === 'cook') return null;
+  return t;
+}
+function canFinishLeft(key) {
+  var t = leftTask(key);
+  return !!t && !tripAway() && (G.s.res[t.id] || 0) + 1 <= capOf(t.id) + 1e-9;
+}
+function finishLeftWork(key, dt) {
+  if (!canFinishLeft(key)) return;
+  var s = G.s, t = s.kitchen.tasks[key];
+  cookApply(t, MANUAL_COOK * dt);
+  if (t.done) delete s.kitchen.tasks[key];
+}

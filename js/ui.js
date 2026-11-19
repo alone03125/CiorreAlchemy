@@ -149,7 +149,8 @@ function bar(fn, cls) {
   onUpdate(() => smoothWidth(fill, fn()));
   return el;
 }
-/* 按住不放的按钮：按住时每帧调用 o.work(dt)，按钮底色显示 o.progress() 的进度。small 为表格里的小号样式 */
+/* 按住不放的按钮：按住时每帧调用 o.work(dt)，按钮底色显示 o.progress() 的进度。small 为表格里的小号样式。
+ * o.onStart 在每次按下时调用 */
 function holdButton(o) {
   const el = h(o.small ? 'a' : 'div', { class: (o.small ? 'lb hold' : 'btn hold') + ' ' + (o.cls || ''), tip: o.tip });
   const fill = h('span', { class: 'hfill' });
@@ -163,6 +164,7 @@ function holdButton(o) {
     holdStop();
     UI.hold = { o: o, el: el };
     el.classList.add('holding');
+    if (o.onStart) o.onStart();
     o.work(0.12);
     UI.refreshAll();
   };

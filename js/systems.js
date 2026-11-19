@@ -24,7 +24,7 @@ function checkUnlocks() {
       }
     });
   }
-  if (!s.flags.crowdWarn && s.dragons.length > 12 && G.happy < 85) {
+  if (!s.flags.crowdWarn && crowdCount() > 12 && G.happy < 85) {
     s.flags.crowdWarn = true;
     logC('dragon', TXT.dragon.crowded);
   }
@@ -149,14 +149,21 @@ function marketDraw() {
   return got;
 }
 /* 按住“集市淘宝”时调用 */
+/* v0.5.2：一直按住时越淘越快。每次按下从 ×1 开始，这次按住期间每淘到一次速度 +0.5，最多 ×4。
+ * 只记在内存里，不存档 */
+var MARKET_RUSH_STEP = 0.5, MARKET_RUSH_MAX = 4;
+var marketRush = 0;
+function marketHoldStart() { marketRush = 0; }
+function marketSpeed() { return Math.min(MARKET_RUSH_MAX, 1 + MARKET_RUSH_STEP * marketRush); }
 function marketWork(dt) {
   var s = G.s;
   if (!canMarket()) return;
-  s.market.prog += dt / MARKET_WORK;
+  s.market.prog += dt * marketSpeed() / MARKET_WORK;
   var guard = 0;
   while (s.market.prog >= 1 && guard++ < 5) {
     s.market.prog -= 1;
     if (!marketDraw()) { s.market.prog = 0; break; }
+    marketRush++;
   }
 }
 

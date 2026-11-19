@@ -1,7 +1,7 @@
 /* 核心：状态、效果汇总、幸福度、产出计算、时间推进、存档、日志与通用工具 */
 
 var G = {
-  version: '0.5.1',
+  version: '0.5.2',
   s: null,          // 当前存档状态
   E: {},            // 当前生效的效果汇总
   happy: 100,       // 幸福度（百分数）
@@ -209,10 +209,12 @@ function staffSnacks() {
   return list;
 }
 
-/* 幸福度：参照原版，超过 5 只后每只 -2%，温泉池按比例减轻；零食、饱足、保育员、茶会、建筑等提高 */
+/* 幸福度：参照原版，超过 5 只后每只 -2%，温泉池按比例减轻；零食、饱足、保育员、茶会、建筑等提高。
+ * v0.5.2 起拥挤只数在工坊里的小龙，派遣、商队和借给 Ayrelia 的不算 */
+function crowdCount() { return G.s.dragons.filter(function (d) { return !d.away; }).length; }
 function computeHappiness() {
   var s = G.s, N = s.dragons.length, P = {};
-  P.crowd = -Math.max(0, N - 5) * 2 * Math.max(0.25, 1 - eff('crowdRelief'));
+  P.crowd = -Math.max(0, crowdCount() - 5) * 2 * Math.max(0.25, 1 - eff('crowdRelief'));
   P.bld = eff('happiness');
   P.snack = Math.min(40, staffSnacks().length * 5);
   var fed = 0;

@@ -43,8 +43,10 @@ function buildNest(el) {
     ]
   }));
   if (marketUnlocked()) {
-    grid.appendChild(holdButton({ label: T('market'), work: dt => marketWork(dt), enabled: canMarket, progress: () => s.market.prog, cls: 'special',
-      tip: () => tipSimple(T('market'), T('market_d', MARKET_MAX_LV + 1)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.quill), s.res.quill, MARKET_COST, 'quill') }));
+    const mo = { work: dt => marketWork(dt), enabled: canMarket, progress: () => s.market.prog, cls: 'special', onStart: marketHoldStart,
+      label: () => UI.hold && UI.hold.o === mo && marketSpeed() > 1 ? T('market_rush', T('market'), fmt(marketSpeed(), 1)) : T('market'),
+      tip: () => tipSimple(T('market'), T('market_d', MARKET_MAX_LV + 1, MARKET_RUSH_MAX)) + '<div class="tt-sep"></div>' + costRow(L(RES_MAP.quill), s.res.quill, MARKET_COST, 'quill') };
+    grid.appendChild(holdButton(mo));
   }
   el.appendChild(grid);
   if (marketUnlocked()) el.appendChild(liveText('div', () => s.market.last.length ? T('market_last') + s.market.last.map(x => x.item ? L(ITEMS[x.item]) + ' Lv' + ITEMS[x.item].lv : L(RES_MAP[x.res]) + ' ' + fmt(x.n)).join(T('list_sep')) : '', 'line dim small'));
@@ -261,7 +263,10 @@ function buildWorkshop(el) {
             if (!x.dragon) return t ? T('ws_cook_wait', L(FOOD_MAP[t.id])) : '';
             return t ? T('ws_cook_now', x.dragon.name, L(FOOD_MAP[t.id])) : T('ws_cook_idle', x.dragon.name);
           }, 'stat-l wide'),
-          bar(() => { const t = task(); return t ? t.prog : 0; }, 'cook')));
+          bar(() => { const t = task(); return t ? t.prog : 0; }, 'cook'),
+          x.dragon ? null : holdButton({ small: true, label: T('ws_cook_finish'), work: dt => finishLeftWork(x.key, dt),
+            enabled: () => canFinishLeft(x.key), progress: () => { const t = task(); return t ? t.prog : 0; },
+            tip: () => { const t = task(); return tipSimple(T('ws_cook_finish'), T('ws_cook_finish_d')) + (t ? '<div class="tt-sep"></div>' + tipFood(t.id) : ''); } })));
       });
     }));
     el.appendChild(region(() => s.ui.menuView, r => {
